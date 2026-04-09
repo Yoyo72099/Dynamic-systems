@@ -1,1 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>LUNAR</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Cinzel:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #080810; color: #fff; font-family: 'Space Mono', monospace; min-height: 100vh; overflow-x: hidden; }
+    #starfield { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
+    .main { position: relative; z-index: 1; display: grid; grid-template-columns: 220px 1fr 220px; min-height: 100vh; padding: 30px; gap: 20px; }
+    .topbar { grid-column: 1/-1; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 16px; }
+    .topbar-title { font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: 6px; color: rgba(255,255,255,0.3); }
+    .topbar-status { font-size: 9px; letter-spacing: 3px; color: #4ade80; }
+    .topbar-date { font-size: 9px; letter-spacing: 2px; color: rgba(255,255,255,0.25); }
+    .panel-left, .panel-right { display: flex; flex-direction: column; gap: 20px; padding-top: 20px; }
+    .data-block { border: 1px solid rgba(255,255,255,0.07); padding: 16px; position: relative; }
+    .data-block::before { content: ''; position: absolute; top: -1px; left: 10px; width: 30px; height: 1px; background: #4ade80; }
+    .data-block-label { font-size: 8px; letter-spacing: 3px; color: rgba(255,255,255,0.25); text-transform: uppercase; margin-bottom: 10px; }
+    .data-block-value { font-size: 22px; font-weight: 700; color: #fff; line-height: 1; }
+    .data-block-sub { font-size: 9px; color: rgba(255,255,255,0.25); margin-top: 6px; letter-spacing: 1px; }
+    .illum-bar { width: 100%; height: 2px; background: rgba(255,255,255,0.08); margin-top: 10px; }
+    .illum-fill { height: 100%; background: linear-gradient(90deg, rgba(255,255,255,0.1), #fff); transition: width 1.2s ease; }
 
+    .center { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+
+    /* Moon image container with orbital rings */
+    .moon-wrap {
+      position: relative;
+      width: 340px;
+      height: 340px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #orbitCanvas {
+      position: absolute;
+      top: 0; left: 0;
+      width: 340px; height: 340px;
+      pointer-events: none;
+    }
+
+    .moon-img-container {
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      overflow: hidden;
+      position: relative;
+      z-index: 2;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    #moonImg {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: opacity 0.8s ease;
+      border-radius: 50%;
+    }
+
+    .moon-loading {
+      position: absolute;
+      inset: 0;
+      background: #0d0d18;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 9px;
+      letter-spacing: 2px;
+      color: rgba(255,255,255,0.2);
+    }
+
+    .moon-label { margin-top: 24px; text-align: center; }
+    .moon-phase-name { font-family: 'Cinzel', serif; font-size: 18px; letter-spacing: 4px; color: #fff; margin-bottom: 6px; }
+    .moon-location { font-size: 9px; letter-spacing: 3px; color: rgba(255,255,255,0.3); }
+
+    .bottombar { grid-column: 1/-1; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 20px; display: flex; align-items: center; gap: 16px; }
+    .search-label { font-size: 9px; letter-spacing: 3px; color: rgba(255,255,255,0.2); white-space: nowrap; }
+    input { background: transparent; border: none; border-bottom: 1px solid rgba(255,255,255,0.15); color: #fff; font-family: 'Space Mono', monospace; font-size: 13px; padding: 8px 4px; width: 220px; outline: none; letter-spacing: 2px; }
+    input::placeholder { color: rgba(255,255,255,0.15); }
+    input:focus { border-bottom-color: rgba(255,255,255,0.4); }
+    button { background: transparent; border: 1px solid rgba(255,255,255,0.15); color: rgba(255,255,255,0.4); font-family: 'Space Mono', monospace; font-size: 9px; letter-spacing: 3px; padding: 8px 20px; cursor: pointer; text-transform: uppercase; transition: all 0.3s; }
+    button:hover { border-color: rgba(255,255,255,0.4); color: #fff; }
+    .status-bar { font-size: 9px; letter-spacing: 2px; color: rgba(255,255,255,0.2); margin-left: auto; }
+    .status-bar.error { color: #f87171; }
+    .status-bar.ok { color: #4ade80; }
+
+    @media (max-width: 768px) {
+      .main { grid-template-columns: 1fr; padding: 16px; }
+      .panel-left, .panel-right { flex-direction: row; flex-wrap: wrap; }
+      .data-block { flex: 1; min-width: 130px; }
+    }
+  </style>
+</head>
+<body>
+<canvas id="starfield"></canvas>
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-title">LUNAR OBSERVATION SYSTEM</div>
+    <div class="topbar-status">● SYSTEM ONLINE</div>
+    <div class="topbar-date" id="dateDisplay">—</div>
+  </div>
+
+  <div class="panel-left">
+    <div class="data-block">
+      <div class="data-block-label">Illumination</div>
+      <div class="data-block-value" id="illumination">—</div>
+      <div class="illum-bar"><div class="illum-fill" id="illumFill" style="width:0%"></div></div>
+      <div class="data-block-sub">of lunar surface lit</div>
+    </div>
+    <div class="data-block">
+      <div class="data-block-label">Moon Age</div>
+      <div class="data-block-value" id="moonAge">—</div>
+      <div class="data-block-sub">days into cycle</div>
+    </div>
+    <div class="data-block">
+      <div class="data-block-label">Cycle Progress</div>
+      <div class="data-block-value" id="cycleProgress">—</div>
+      <div class="data-block-sub">of 29.53 day cycle</div>
+    </div>
+    <div class="data-block">
+      <div class="data-block-label">Coordinates</div>
+      <div class="data-block-value" style="font-size:13px;line-height:1.6;" id="coordDisplay">—</div>
+      <div class="data-block-sub" id="locationSub">awaiting signal</div>
+    </div>
+  </div>
+
+  <div class="center">
+    <div class="moon-wrap">
+      <canvas id="orbitCanvas" width="340" height="340"></canvas>
+      <div class="moon-img-container">
+        <div class="moon-loading" id="moonLoading">LOADING</div>
+        <img id="moonImg" src="" alt="moon" style="opacity:0;" />
+      </div>
+    </div>
+    <div class="moon-label">
+      <div class="moon-phase-name" id="phaseName">DETECTING</div>
+      <div class="moon-location" id="locationName">locating observer</div>
+    </div>
+  </div>
+
+  <div class="panel-right">
+    <div class="data-block">
+      <div class="data-block-label">Moonrise</div>
+      <div class="data-block-value" style="font-size:18px;" id="moonrise">—</div>
+      <div class="data-block-sub">local time</div>
+    </div>
+    <div class="data-block">
+      <div class="data-block-label">Moonset</div>
+      <div class="data-block-value" style="font-size:18px;" id="moonset">—</div>
+      <div class="data-block-sub">local time</div>
+    </div>
+    <div class="data-block">
+      <div class="data-block-label">Days to Full Moon</div>
+      <div class="data-block-value" id="nextFull">—</div>
+      <div class="data-block-sub">days remaining</div>
+    </div>
+    <div class="data-block">
+      <div class="data-block-label">Days to New Moon</div>
+      <div class="data-block-value" id="nextNew">—</div>
+      <div class="data-block-sub">days remaining</div>
+    </div>
+  </div>
+
+  <div class="bottombar">
+    <div class="search-label">SEARCH LOCATION</div>
+    <input type="text" id="cityInput" placeholder="enter city name" />
+    <button onclick="searchCity()">Query</button>
+    <div class="status-bar" id="status">awaiting input</div>
+  </div>
+</div>
+
+<script>
+// ── Real moon phase photos (Wikimedia Commons, public domain) ──
+const MOON_PHOTOS = {
+  'New Moon':        'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/New_Moon.jpg/600px-New_Moon.jpg',
+  'Waxing Crescent': 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/WaxingCrescentMoon.jpg/600px-WaxingCrescentMoon.jpg',
+  'First Quarter':   'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/Moon_first_quarter.jpg/600px-Moon_first_quarter.jpg',
+  'Waxing Gibbous':  'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/Waxing_gibbous_moon_over_Vancouver_Island.jpg/600px-Waxing_gibbous_moon_over_Vancouver_Island.jpg',
+  'Full Moon':       'https://upload.wikimedia.org/wikipedia/commons/thumb/4/40/Full_moon.jpeg/600px-Full_moon.jpeg',
+  'Waning Gibbous':  'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Waning_gibbous_moon_over_Sevilla.jpg/600px-Waning_gibbous_moon_over_Sevilla.jpg',
+  'Last Quarter':    'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c7/Moon_at_last_quarter_-_20100319.jpg/600px-Moon_at_last_quarter_-_20100319.jpg',
+  'Waning Crescent': 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f0/Waning_Crescent_Moon.jpg/600px-Waning_Crescent_Moon.jpg',
+};
+
+function setMoonPhoto(phaseName) {
+  const img = document.getElementById('moonImg');
+  const loading = document.getElementById('moonLoading');
+
+  // Match phase name to photo key
+  const key = Object.keys(MOON_PHOTOS).find(k =>
+    phaseName.toLowerCase().includes(k.toLowerCase()) ||
+    k.toLowerCase().includes(phaseName.toLowerCase().split(' ').slice(0,2).join(' '))
+  ) || 'Full Moon';
+
+  const url = MOON_PHOTOS[key];
+  img.style.opacity = '0';
+  loading.style.display = 'flex';
+
+  const tempImg = new Image();
+  tempImg.crossOrigin = 'anonymous';
+  tempImg.onload = () => {
+    img.src = url;
+    img.style.opacity = '1';
+    loading.style.display = 'none';
+  };
+  tempImg.onerror = () => {
+    // fallback to full moon if image fails
+    img.src = MOON_PHOTOS['Full Moon'];
+    img.style.opacity = '1';
+    loading.style.display = 'none';
+  };
+  tempImg.src = url;
+}
+
+// ── Starfield ──────────────────────────────────────────
+const sf = document.getElementById('starfield');
+const sctx = sf.getContext('2d');
+let stars = [];
+function initStars() {
+  sf.width = window.innerWidth; sf.height = window.innerHeight; stars = [];
+  const colors = ['#fff','#a5f3fc','#fde68a','#c4b5fd','#86efac'];
+  for (let i = 0; i < 250; i++) {
+    stars.push({ x: Math.random()*sf.width, y: Math.random()*sf.height,
+      r: Math.random()*1.2, color: colors[Math.floor(Math.random()*colors.length)],
+      t: Math.random()*Math.PI*2, s: 0.01+Math.random()*0.02, big: Math.random()<0.035 });
+  }
+}
+function drawStars() {
+  sctx.clearRect(0,0,sf.width,sf.height);
+  stars.forEach(s => {
+    s.t += s.s;
+    const alpha = s.big ? 0.9 : 0.3+0.4*Math.abs(Math.sin(s.t));
+    sctx.beginPath();
+    sctx.arc(s.x, s.y, s.big ? 4+Math.sin(s.t)*1.5 : s.r, 0, Math.PI*2);
+    sctx.fillStyle = s.color; sctx.globalAlpha = alpha; sctx.fill();
+  });
+  sctx.globalAlpha = 1;
+  requestAnimationFrame(drawStars);
+}
+window.addEventListener('resize', initStars);
+initStars(); requestAnimationFrame(drawStars);
+
+// ── Orbit rings canvas ─────────────────────────────────
+const oc = document.getElementById('orbitCanvas');
+const octx = oc.getContext('2d');
+const CX=170, CY=170, R=100;
+
+function drawOrbits() {
+  octx.clearRect(0,0,oc.width,oc.height);
+  [R+18,R+34,R+52].forEach((r,i) => {
+    octx.beginPath(); octx.arc(CX,CY,r,0,Math.PI*2);
+    octx.strokeStyle=['rgba(255,255,255,0.05)','rgba(255,255,255,0.07)','rgba(255,255,255,0.03)'][i];
+    octx.lineWidth=1; octx.stroke();
+  });
+  for (let i=0;i<72;i++) {
+    const a=(i/72)*Math.PI*2, inner=R+30, outer=R+34+(i%6===0?5:2);
+    octx.beginPath();
+    octx.moveTo(CX+Math.cos(a)*inner, CY+Math.sin(a)*inner);
+    octx.lineTo(CX+Math.cos(a)*outer, CY+Math.sin(a)*outer);
+    octx.strokeStyle = i%6===0?'rgba(255,255,255,0.3)':'rgba(255,255,255,0.08)';
+    octx.lineWidth=1; octx.stroke();
+  }
+  [{angle:0.6,r:R+34,color:'#4ade80',size:5},{angle:2.1,r:R+34,color:'#60a5fa',size:4},
+   {angle:3.8,r:R+34,color:'#fff',size:3},{angle:5.0,r:R+34,color:'#4ade80',size:6},
+   {angle:1.2,r:R+52,color:'#60a5fa',size:3},{angle:4.2,r:R+52,color:'#fde68a',size:3}]
+  .forEach(d => {
+    octx.beginPath();
+    octx.arc(CX+Math.cos(d.angle)*d.r, CY+Math.sin(d.angle)*d.r, d.size, 0, Math.PI*2);
+    octx.fillStyle=d.color; octx.fill();
+  });
+  octx.strokeStyle='rgba(255,255,255,0.05)'; octx.lineWidth=1;
+  [[CX-R-55,CY,CX+R+55,CY],[CX,CY-R-55,CX,CY+R+55]].forEach(([x1,y1,x2,y2])=>{
+    octx.beginPath(); octx.moveTo(x1,y1); octx.lineTo(x2,y2); octx.stroke();
+  });
+}
+drawOrbits();
+
+// ── US Navy API ────────────────────────────────────────
+async function fetchNavyData(lat, lon) {
+  const now = new Date();
+  const date = now.toISOString().split('T')[0];
+  const tz = -(now.getTimezoneOffset()/60);
+  const url = `https://aa.usno.navy.mil/api/rstt/oneday?date=${date}&coords=${lat.toFixed(2)},${lon.toFixed(2)}&tz=${tz}&dst=true`;
+  const res = await fetch(url);
+  return await res.json();
+}
+
+async function getMoonData(lat, lon, city) {
+  setStatus('fetching real lunar data...', '');
+  let phaseName='—', illumination=0, moonriseTime='—', moonsetTime='—', moonAge='—';
+
+  try {
+    const data = await fetchNavyData(lat, lon);
+    const d = data.properties?.data;
+    if (d) {
+      illumination = Math.round((d.fracillum || 0) * 100);
+      phaseName = d.curphase || 'Full Moon';
+      moonAge = d.moonage ? d.moonage.toFixed(1) : '—';
+      (d.moondata || []).forEach(p => {
+        if (p.phen==='Rise') moonriseTime = p.time;
+        if (p.phen==='Set')  moonsetTime  = p.time;
+      });
+      setStatus('US Navy Astronomical API · signal acquired', 'ok');
+    }
+  } catch {
+    // Fallback: FarmSense
+    try {
+      const unix = Math.floor(Date.now()/1000);
+      const fs = await fetch(`https://api.farmsense.net/v1/moonphases/?d=${unix}`);
+      const fd = await fs.json();
+      illumination = Math.round((fd[0].Illumination||0)*100);
+      phaseName = fd[0].Phase || 'Full Moon';
+      moonAge = fd[0].Age ? fd[0].Age.toFixed(1) : '—';
+      setStatus('FarmSense API · signal acquired', 'ok');
+    } catch {
+      setStatus('API error', 'error');
+    }
+  }
+
+  const syn=29.53058867, age=parseFloat(moonAge)||0;
+  const toFull = (age<14.77 ? 14.77-age : syn-age+14.77).toFixed(1);
+  const toNew  = (syn-age).toFixed(1);
+
+  document.getElementById('phaseName').textContent    = phaseName.toUpperCase();
+  document.getElementById('locationName').textContent = city.toUpperCase();
+  document.getElementById('illumination').textContent = illumination+'%';
+  document.getElementById('illumFill').style.width    = illumination+'%';
+  document.getElementById('moonAge').textContent       = moonAge;
+  document.getElementById('cycleProgress').textContent = age ? Math.round((age/syn)*100)+'%' : '—';
+  document.getElementById('coordDisplay').textContent  = `${lat.toFixed(2)}°\n${Math.abs(lon).toFixed(2)}° ${lon<0?'W':'E'}`;
+  document.getElementById('locationSub').textContent   = city.toLowerCase();
+  document.getElementById('moonrise').textContent      = moonriseTime;
+  document.getElementById('moonset').textContent       = moonsetTime;
+  document.getElementById('nextFull').textContent      = toFull;
+  document.getElementById('nextNew').textContent       = toNew;
+
+  setMoonPhoto(phaseName);
+}
+
+function setStatus(msg, type) {
+  const el = document.getElementById('status');
+  el.textContent = msg;
+  el.className = 'status-bar'+(type?' '+type:'');
+}
+
+async function getCityName(lat, lon) {
+  try {
+    const r = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&accept-language=en`);
+    const d = await r.json();
+    const raw = d.address?.city||d.address?.town||d.address?.village||d.address?.county||'Unknown';
+    // Keep only ASCII characters (remove any CJK or non-latin)
+    return raw.replace(/[^\x00-\x7F]/g, '').replace(/;.*/, '').trim() || 'Unknown';
+  } catch { return 'Unknown'; }
+}
+
+async function searchCity() {
+  const v = document.getElementById('cityInput').value.trim();
+  if (!v) return;
+  setStatus('searching...','');
+  try {
+    const r = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(v)}&format=json&limit=1&accept-language=en`);
+    const d = await r.json();
+    if (!d.length) { setStatus('city not found','error'); return; }
+    getMoonData(parseFloat(d[0].lat), parseFloat(d[0].lon), v.charAt(0).toUpperCase()+v.slice(1));
+    document.getElementById('cityInput').value='';
+  } catch { setStatus('search error','error'); }
+}
+
+document.getElementById('cityInput').addEventListener('keydown', e => { if(e.key==='Enter') searchCity(); });
+
+const n=new Date();
+document.getElementById('dateDisplay').textContent =
+  n.toISOString().split('T')[0]+' · UTC'+(n.getTimezoneOffset()/-60>=0?'+':'')+(n.getTimezoneOffset()/-60);
+
+if (navigator.geolocation) {
+  setStatus('locating observer...','');
+  navigator.geolocation.getCurrentPosition(
+    async pos => {
+      const city = await getCityName(pos.coords.latitude, pos.coords.longitude);
+      getMoonData(pos.coords.latitude, pos.coords.longitude, city);
+    },
+    () => getMoonData(40.7128,-74.0060,'New York')
+  );
+} else {
+  getMoonData(40.7128,-74.0060,'New York');
+}
+</script>
+</body>
+</html>
