@@ -182,11 +182,6 @@
 
 <script>
 const SYNODIC_CYCLE = 29.53058867;
-const THREE_CDN_CANDIDATES = [
-  'https://unpkg.com/three@0.161.0/build/three.min.js',
-  'https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.min.js',
-  'https://cdnjs.cloudflare.com/ajax/libs/three.js/r161/three.min.js'
-];
 let currentMode = 'live';
 let latestLive = null;
 let latestSearch = null;
@@ -197,36 +192,10 @@ let moonSmoothAge = 14.7;
 let moonVelocity = 0;
 let moonLastFrameTs = performance.now();
 const moonCanvas = document.getElementById('moonModel');
-let moonRenderer = null;
-let moonScene = null;
-let moonCamera = null;
-let moonMesh = null;
-let moonLight = null;
-let moonFillLight = null;
-
-function loadScriptOnce(src) {
-  return new Promise((resolve, reject) => {
-    const s = document.createElement('script');
-    s.src = src;
-    s.async = true;
-    s.onload = () => resolve(true);
-    s.onerror = () => reject(new Error(`failed: ${src}`));
-    document.head.appendChild(s);
-  });
-}
-
-async function ensureThreeLoaded() {
-  if (window.THREE) return true;
-  for (const src of THREE_CDN_CANDIDATES) {
-    try {
-      await loadScriptOnce(src);
-      if (window.THREE) return true;
-    } catch (_) {
-      // try next CDN candidate
-    }
-  }
-  return false;
-}
+let moonGL = null;
+let moonProgram = null;
+let moonUniforms = null;
+let moonRot = 0;
 
 function setMoonAgeTarget(age, immediate) {
   moonTargetAge = clamp(age, 0, SYNODIC_CYCLE);
@@ -237,73 +206,117 @@ function setMoonAgeTarget(age, immediate) {
 }
 
 function initMoon3D() {
-  if (!window.THREE) {
-    setStatus('3D engine failed to load', 'error');
-    return;
-  }
-  const probe = moonCanvas.getContext('webgl2') || moonCanvas.getContext('webgl');
-  if (!probe) {
+  moonGL = moonCanvas.getContext('webgl', { antialias: true, alpha: true }) || moonCanvas.getContext('experimental-webgl');
+  if (!moonGL) {
     setStatus('WebGL not available in this browser', 'error');
     return;
   }
-  const size = moonCanvas.clientWidth || moonCanvas.width;
   try {
-    moonRenderer = new THREE.WebGLRenderer({ canvas: moonCanvas, alpha: true, antialias: true });
+    const vertexSrc = `
+      attribute vec2 aPos;
+      varying vec2 vUv;
+      void main() {
+        vUv = aPos;
+        gl_Position = vec4(aPos, 0.0, 1.0);
+      }
+    `;
+    const fragmentSrc = `
+      precision highp float;
+      varying vec2 vUv;
+      uniform vec2 uResolution;
+      uniform float uPhase;
+      uniform float uRot;
+      uniform float uTime;
+
+      float hash(vec2 p) {
+        return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
+      }
+      float noise(vec2 p) {
+        vec2 i = floor(p);
+        vec2 f = fract(p);
+        vec2 u = f * f * (3.0 - 2.0 * f);
+        return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), u.x),
+                   mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), u.x), u.y);
+      }
+
+      void main() {
+        vec2 p = vUv;
+        float r2 = dot(p, p);
+        if (r2 > 1.0) discard;
+        float z = sqrt(1.0 - r2);
+        vec3 n = normalize(vec3(p, z));
+
+        float lon = atan(n.x, n.z) + uRot;
+        float lat = asin(n.y);
+        vec2 uv = vec2(lon * 0.35, lat * 0.7);
+        float tex = noise(uv * 8.0) * 0.5 + noise(uv * 20.0) * 0.3 + noise(uv * 45.0) * 0.2;
+        float crater = smoothstep(0.55, 0.98, noise(uv * 28.0 + 17.0));
+        tex = tex * 0.85 + crater * 0.15;
+
+        vec3 base = mix(vec3(0.42, 0.44, 0.48), vec3(0.83, 0.84, 0.86), tex);
+        vec3 lMain = normalize(vec3(sin(uPhase), 0.16, -cos(uPhase)));
+        vec3 lFill = normalize(vec3(0.2, -0.1, 1.0));
+        float dMain = max(0.0, dot(n, lMain));
+        float dFill = max(0.0, dot(n, lFill));
+
+        float earthshine = 0.12 * dFill;
+        float light = dMain * 1.15 + earthshine + 0.03;
+        float rim = pow(max(0.0, z), 0.45);
+        vec3 color = base * light * (0.72 + 0.28 * rim);
+
+        float fresnel = pow(1.0 - z, 2.8);
+        color += vec3(0.06, 0.07, 0.10) * fresnel;
+        gl_FragColor = vec4(color, 1.0);
+      }
+    `;
+    const compile = (type, source) => {
+      const shader = moonGL.createShader(type);
+      moonGL.shaderSource(shader, source);
+      moonGL.compileShader(shader);
+      if (!moonGL.getShaderParameter(shader, moonGL.COMPILE_STATUS)) {
+        throw new Error(moonGL.getShaderInfoLog(shader) || 'Shader compile failed');
+      }
+      return shader;
+    };
+    const vs = compile(moonGL.VERTEX_SHADER, vertexSrc);
+    const fs = compile(moonGL.FRAGMENT_SHADER, fragmentSrc);
+    moonProgram = moonGL.createProgram();
+    moonGL.attachShader(moonProgram, vs);
+    moonGL.attachShader(moonProgram, fs);
+    moonGL.linkProgram(moonProgram);
+    if (!moonGL.getProgramParameter(moonProgram, moonGL.LINK_STATUS)) {
+      throw new Error(moonGL.getProgramInfoLog(moonProgram) || 'Program link failed');
+    }
+    moonGL.useProgram(moonProgram);
+
+    const quad = moonGL.createBuffer();
+    moonGL.bindBuffer(moonGL.ARRAY_BUFFER, quad);
+    moonGL.bufferData(moonGL.ARRAY_BUFFER, new Float32Array([
+      -1, -1,  1, -1, -1, 1,  1, 1
+    ]), moonGL.STATIC_DRAW);
+    const aPos = moonGL.getAttribLocation(moonProgram, 'aPos');
+    moonGL.enableVertexAttribArray(aPos);
+    moonGL.vertexAttribPointer(aPos, 2, moonGL.FLOAT, false, 0, 0);
+
+    moonUniforms = {
+      resolution: moonGL.getUniformLocation(moonProgram, 'uResolution'),
+      phase: moonGL.getUniformLocation(moonProgram, 'uPhase'),
+      rot: moonGL.getUniformLocation(moonProgram, 'uRot'),
+      time: moonGL.getUniformLocation(moonProgram, 'uTime')
+    };
+    const resize = () => {
+      const size = moonCanvas.clientWidth || moonCanvas.width;
+      moonCanvas.width = size;
+      moonCanvas.height = size;
+      moonGL.viewport(0, 0, size, size);
+    };
+    resize();
+    window.addEventListener('resize', resize);
   } catch (_) {
     setStatus('WebGL renderer init failed', 'error');
+    moonGL = null;
     return;
   }
-  moonRenderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-  moonRenderer.setSize(size, size, false);
-  moonRenderer.outputColorSpace = THREE.SRGBColorSpace;
-
-  moonScene = new THREE.Scene();
-  moonCamera = new THREE.PerspectiveCamera(28, 1, 0.1, 100);
-  moonCamera.position.set(0, 0, 5.3);
-
-  const ambient = new THREE.AmbientLight(0x1d2432, 0.34);
-  moonScene.add(ambient);
-
-  moonLight = new THREE.DirectionalLight(0xeaf0ff, 1.45);
-  moonLight.position.set(4, 0.2, -4);
-  moonScene.add(moonLight);
-
-  // Earthshine/fill light so new moon is still faintly visible.
-  moonFillLight = new THREE.DirectionalLight(0x9fb2d9, 0.22);
-  moonFillLight.position.set(0.2, -0.1, 5.6);
-  moonScene.add(moonFillLight);
-
-  const geometry = new THREE.SphereGeometry(1.72, 160, 160);
-  const material = new THREE.MeshStandardMaterial({
-    color: 0xd7dbe4,
-    emissive: 0x161c28,
-    emissiveIntensity: 0.18,
-    roughness: 0.95,
-    metalness: 0.0
-  });
-  moonMesh = new THREE.Mesh(geometry, material);
-  moonScene.add(moonMesh);
-
-  const loader = new THREE.TextureLoader();
-  loader.load(
-    'https://threejs.org/examples/textures/planets/moon_1024.jpg',
-    texture => {
-      texture.wrapS = THREE.RepeatWrapping;
-      texture.wrapT = THREE.ClampToEdgeWrapping;
-      material.map = texture;
-      material.bumpMap = texture;
-      material.bumpScale = 0.045;
-      material.needsUpdate = true;
-    }
-  );
-
-  window.addEventListener('resize', () => {
-    if (!moonRenderer || !moonCamera) return;
-    const next = moonCanvas.clientWidth || moonCanvas.width;
-    moonRenderer.setSize(next, next, false);
-    moonCamera.aspect = 1;
-    moonCamera.updateProjectionMatrix();
-  });
 }
 
 function animateMoon(ts) {
@@ -321,26 +334,24 @@ function animateMoon(ts) {
   }
   moonTargetAge = clamp(moonTargetAge, 0, SYNODIC_CYCLE);
   moonSmoothAge += (moonTargetAge - moonSmoothAge) * (1 - Math.pow(0.86, dt / 16.67));
-  if (moonMesh && moonLight && moonRenderer && moonScene && moonCamera) {
+  if (moonGL && moonProgram && moonUniforms) {
     const phase = (moonSmoothAge / SYNODIC_CYCLE) * Math.PI * 2;
-    moonMesh.rotation.y += (0.0014 + Math.abs(moonVelocity) * 0.008) * (dt / 16.67);
-    moonLight.position.set(Math.sin(phase) * 4.8, 0.22, -Math.cos(phase) * 4.8);
-    if (moonFillLight) moonFillLight.position.set(0.2, -0.1, 5.6);
-    moonRenderer.render(moonScene, moonCamera);
+    moonRot += (0.0013 + Math.abs(moonVelocity) * 0.01) * (dt / 16.67);
+    moonGL.useProgram(moonProgram);
+    moonGL.uniform2f(moonUniforms.resolution, moonCanvas.width, moonCanvas.height);
+    moonGL.uniform1f(moonUniforms.phase, phase);
+    moonGL.uniform1f(moonUniforms.rot, moonRot);
+    moonGL.uniform1f(moonUniforms.time, ts * 0.001);
+    moonGL.drawArrays(moonGL.TRIANGLE_STRIP, 0, 4);
   }
   requestAnimationFrame(animateMoon);
 }
 
-async function bootstrapMoon3D() {
-  setStatus('loading 3D engine...', '');
-  const loaded = await ensureThreeLoaded();
-  if (!loaded) {
-    setStatus('three.js blocked, check network/CSP', 'error');
-    return;
-  }
+function bootstrapMoon3D() {
+  setStatus('initializing local 3D moon...', '');
   initMoon3D();
-  if (!moonRenderer) return;
-  setStatus('3D moon online', 'ok');
+  if (!moonGL) return;
+  setStatus('local 3D moon online', 'ok');
   requestAnimationFrame(animateMoon);
 }
 
@@ -677,6 +688,7 @@ if (navigator.geolocation) {
 </script>
 </body>
 </html>
+
 
 
 
