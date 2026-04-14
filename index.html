@@ -53,26 +53,12 @@
       touch-action: none;
     }
 
-    #moonImg {
+    #moonModel {
       width: 100%;
       height: 100%;
-      object-fit: cover;
       display: block;
-      transition: opacity 0.8s ease;
       border-radius: 50%;
-    }
-
-    .moon-loading {
-      position: absolute;
-      inset: 0;
-      background: #0d0d18;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 9px;
-      letter-spacing: 2px;
-      color: rgba(255,255,255,0.2);
+      filter: drop-shadow(0 0 16px rgba(255,255,255,0.08));
     }
 
     .moon-label { margin-top: 24px; text-align: center; }
@@ -141,8 +127,7 @@
     <div class="moon-wrap">
       <canvas id="orbitCanvas" width="340" height="340"></canvas>
       <div class="moon-img-container">
-        <div class="moon-loading" id="moonLoading">LOADING</div>
-        <img id="moonImg" src="" alt="moon" style="opacity:0;" />
+        <canvas id="moonModel" width="200" height="200" aria-label="Moon model"></canvas>
       </div>
     </div>
     <div class="moon-label">
@@ -194,23 +179,141 @@
 </div>
 
 <script>
-const MOON_PHOTOS = {
-  'New Moon': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/New_Moon.jpg/600px-New_Moon.jpg',
-  'Waxing Crescent': 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/WaxingCrescentMoon.jpg/600px-WaxingCrescentMoon.jpg',
-  'First Quarter': 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/Moon_first_quarter.jpg/600px-Moon_first_quarter.jpg',
-  'Waxing Gibbous': 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/Waxing_gibbous_moon_over_Vancouver_Island.jpg/600px-Waxing_gibbous_moon_over_Vancouver_Island.jpg',
-  'Full Moon': 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/40/Full_moon.jpeg/600px-Full_moon.jpeg',
-  'Waning Gibbous': 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Waning_gibbous_moon_over_Sevilla.jpg/600px-Waning_gibbous_moon_over_Sevilla.jpg',
-  'Last Quarter': 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c7/Moon_at_last_quarter_-_20100319.jpg/600px-Moon_at_last_quarter_-_20100319.jpg',
-  'Waning Crescent': 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f0/Waning_Crescent_Moon.jpg/600px-Waning_Crescent_Moon.jpg'
-};
-
 const SYNODIC_CYCLE = 29.53058867;
 let currentMode = 'live';
 let latestLive = null;
 let latestSearch = null;
 let lastLiveFetchMs = 0;
 let dragState = null;
+let moonTargetAge = 14.7;
+let moonSmoothAge = 14.7;
+let moonVelocity = 0;
+let moonLastFrameTs = performance.now();
+
+const moonCanvas = document.getElementById('moonModel');
+const moonCtx = moonCanvas.getContext('2d');
+const moonTextureCanvas = document.createElement('canvas');
+moonTextureCanvas.width = 160;
+moonTextureCanvas.height = 160;
+const moonTextureCtx = moonTextureCanvas.getContext('2d');
+const moonTexture = moonTextureCtx.createImageData(moonTextureCanvas.width, moonTextureCanvas.height);
+
+function seededNoise(x, y) {
+  const n = Math.sin(x * 12.9898 + y * 78.233 + 37.719) * 43758.5453;
+  return n - Math.floor(n);
+}
+
+function buildMoonTexture() {
+  const size = moonTextureCanvas.width;
+  const c = size / 2;
+  const r = c - 2;
+  for (let y = 0; y < size; y++) {
+    for (let x = 0; x < size; x++) {
+      const dx = x - c;
+      const dy = y - c;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      const idx = (y * size + x) * 4;
+      if (dist > r) {
+        moonTexture.data[idx + 3] = 0;
+        continue;
+      }
+      const n1 = seededNoise(x * 0.12, y * 0.12);
+      const n2 = seededNoise(x * 0.32 + 10, y * 0.32 + 20);
+      const crater = Math.max(0, 1 - Math.abs(Math.sin((x + y) * 0.09 + n2 * 4.0)));
+      const relief = 0.55 + n1 * 0.25 - crater * 0.12;
+      const val = Math.round(140 + relief * 70);
+      moonTexture.data[idx] = val;
+      moonTexture.data[idx + 1] = val;
+      moonTexture.data[idx + 2] = Math.min(255, val + 8);
+      moonTexture.data[idx + 3] = 255;
+    }
+  }
+  moonTextureCtx.putImageData(moonTexture, 0, 0);
+}
+
+function setMoonAgeTarget(age, immediate) {
+  moonTargetAge = clamp(age, 0, SYNODIC_CYCLE);
+  if (immediate) {
+    moonSmoothAge = moonTargetAge;
+    moonVelocity = 0;
+  }
+}
+
+function drawMoonModel(age) {
+  const w = moonCanvas.width;
+  const h = moonCanvas.height;
+  const cx = w / 2;
+  const cy = h / 2;
+  const radius = 96;
+  moonCtx.clearRect(0, 0, w, h);
+  moonCtx.save();
+  moonCtx.beginPath();
+  moonCtx.arc(cx, cy, radius, 0, Math.PI * 2);
+  moonCtx.clip();
+  moonCtx.fillStyle = '#070b12';
+  moonCtx.fillRect(0, 0, w, h);
+  moonCtx.drawImage(moonTextureCanvas, cx - radius, cy - radius, radius * 2, radius * 2);
+
+  const phase = (age / SYNODIC_CYCLE) * Math.PI * 2;
+  const lx = Math.sin(phase);
+  const ly = -0.12;
+  const lz = -Math.cos(phase);
+
+  const samples = 110;
+  const step = (radius * 2) / samples;
+  for (let j = 0; j < samples; j++) {
+    for (let i = 0; i < samples; i++) {
+      const px = cx - radius + i * step;
+      const py = cy - radius + j * step;
+      const nx = (px - cx) / radius;
+      const ny = (py - cy) / radius;
+      const d2 = nx * nx + ny * ny;
+      if (d2 > 1) continue;
+      const nz = Math.sqrt(1 - d2);
+      const diffuse = Math.max(0, nx * lx + ny * ly + nz * lz);
+      const ambient = 0.04;
+      const lum = ambient + diffuse * 0.95;
+      moonCtx.fillStyle = `rgba(255,255,255,${Math.min(1, lum) * 0.66})`;
+      moonCtx.fillRect(px, py, step + 0.3, step + 0.3);
+    }
+  }
+
+  const vignette = moonCtx.createRadialGradient(cx - radius * 0.25, cy - radius * 0.2, radius * 0.2, cx, cy, radius);
+  vignette.addColorStop(0, 'rgba(255,255,255,0.17)');
+  vignette.addColorStop(0.6, 'rgba(255,255,255,0)');
+  vignette.addColorStop(1, 'rgba(0,0,0,0.30)');
+  moonCtx.fillStyle = vignette;
+  moonCtx.fillRect(cx - radius, cy - radius, radius * 2, radius * 2);
+  moonCtx.restore();
+
+  moonCtx.beginPath();
+  moonCtx.arc(cx, cy, radius, 0, Math.PI * 2);
+  moonCtx.strokeStyle = 'rgba(255,255,255,0.15)';
+  moonCtx.lineWidth = 1;
+  moonCtx.stroke();
+}
+
+function animateMoon(ts) {
+  const dt = Math.min(40, ts - moonLastFrameTs || 16.67);
+  moonLastFrameTs = ts;
+  if (!dragState) {
+    if (Math.abs(moonVelocity) > 0.0005) {
+      moonTargetAge += moonVelocity * (dt / 16.67);
+      if (moonTargetAge < 0 || moonTargetAge > SYNODIC_CYCLE) {
+        moonTargetAge = clamp(moonTargetAge, 0, SYNODIC_CYCLE);
+        moonVelocity *= -0.35;
+      }
+      moonVelocity *= Math.pow(0.92, dt / 16.67);
+    }
+  }
+  moonTargetAge = clamp(moonTargetAge, 0, SYNODIC_CYCLE);
+  moonSmoothAge += (moonTargetAge - moonSmoothAge) * (1 - Math.pow(0.86, dt / 16.67));
+  drawMoonModel(moonSmoothAge);
+  requestAnimationFrame(animateMoon);
+}
+
+buildMoonTexture();
+requestAnimationFrame(animateMoon);
 
 function clamp(v, min, max) {
   return Math.min(max, Math.max(min, v));
@@ -226,31 +329,6 @@ function getPhaseNameFromAge(age) {
   if (a < 20.30228) return 'Waning Gibbous';
   if (a < 23.99361) return 'Last Quarter';
   return 'Waning Crescent';
-}
-
-function setMoonPhoto(phaseName) {
-  const img = document.getElementById('moonImg');
-  const loading = document.getElementById('moonLoading');
-  const key = Object.keys(MOON_PHOTOS).find(k =>
-    phaseName.toLowerCase().includes(k.toLowerCase()) ||
-    k.toLowerCase().includes(phaseName.toLowerCase().split(' ').slice(0, 2).join(' '))
-  ) || 'Full Moon';
-  const url = MOON_PHOTOS[key];
-  img.style.opacity = '0';
-  loading.style.display = 'flex';
-  const tempImg = new Image();
-  tempImg.crossOrigin = 'anonymous';
-  tempImg.onload = () => {
-    img.src = url;
-    img.style.opacity = '1';
-    loading.style.display = 'none';
-  };
-  tempImg.onerror = () => {
-    img.src = MOON_PHOTOS['Full Moon'];
-    img.style.opacity = '1';
-    loading.style.display = 'none';
-  };
-  tempImg.src = url;
 }
 
 const sf = document.getElementById('starfield');
@@ -371,19 +449,20 @@ function applyMoonDataToUI(data) {
   document.getElementById('moonrise').textContent = data.moonriseTime;
   document.getElementById('moonset').textContent = data.moonsetTime;
   updateMoonCycleDerivedValues(data.moonAge);
-  setMoonPhoto(data.phaseName);
   if (data.moonAge !== null) {
+    setMoonAgeTarget(data.moonAge, true);
     document.getElementById('phaseSlider').value = data.moonAge.toFixed(1);
     document.getElementById('phaseSliderValue').textContent = `${data.moonAge.toFixed(1)}d`;
   }
 }
 
-function applyManualPhase(age) {
+function applyManualPhase(age, silent) {
   const source = currentMode === 'search' ? latestSearch : latestLive;
   if (!source) return;
   const safeAge = clamp(age, 0, SYNODIC_CYCLE);
   const illum = Math.round(100 * 0.5 * (1 - Math.cos((2 * Math.PI * safeAge) / SYNODIC_CYCLE)));
   const phase = getPhaseNameFromAge(safeAge);
+  setMoonAgeTarget(safeAge, false);
   document.getElementById('phaseName').textContent = phase.toUpperCase();
   document.getElementById('illumination').textContent = illum + '%';
   document.getElementById('illumFill').style.width = illum + '%';
@@ -391,8 +470,7 @@ function applyManualPhase(age) {
   updateMoonCycleDerivedValues(safeAge);
   document.getElementById('phaseSlider').value = safeAge.toFixed(1);
   document.getElementById('phaseSliderValue').textContent = `${safeAge.toFixed(1)}d`;
-  setMoonPhoto(phase);
-  setStatus('manual phase preview', '');
+  if (!silent) setStatus('manual phase preview', '');
 }
 
 async function getMoonData(lat, lon, city) {
@@ -469,8 +547,14 @@ async function searchCity() {
 }
 
 document.getElementById('cityInput').addEventListener('keydown', e => { if (e.key === 'Enter') searchCity(); });
-document.getElementById('phaseSlider').addEventListener('input', e => applyManualPhase(Number(e.target.value)));
-document.getElementById('manualBtn').addEventListener('click', () => applyManualPhase(Number(document.getElementById('phaseSlider').value)));
+document.getElementById('phaseSlider').addEventListener('input', e => {
+  moonVelocity = 0;
+  applyManualPhase(Number(e.target.value), false);
+});
+document.getElementById('manualBtn').addEventListener('click', () => {
+  moonVelocity = 0;
+  applyManualPhase(Number(document.getElementById('phaseSlider').value), false);
+});
 document.getElementById('liveBtn').addEventListener('click', () => {
   currentMode = 'live';
   if (latestLive) {
@@ -483,13 +567,26 @@ document.getElementById('liveBtn').addEventListener('click', () => {
 
 const moonContainer = document.querySelector('.moon-img-container');
 moonContainer.addEventListener('pointerdown', e => {
-  dragState = { id: e.pointerId, x: e.clientX, age: Number(document.getElementById('phaseSlider').value) };
+  dragState = {
+    id: e.pointerId,
+    x: e.clientX,
+    t: performance.now(),
+    age: Number(document.getElementById('phaseSlider').value)
+  };
+  moonVelocity = 0;
   moonContainer.setPointerCapture(e.pointerId);
 });
 moonContainer.addEventListener('pointermove', e => {
   if (!dragState || dragState.id !== e.pointerId) return;
   const deltaX = e.clientX - dragState.x;
-  applyManualPhase(clamp(dragState.age + deltaX * 0.08, 0, SYNODIC_CYCLE));
+  const now = performance.now();
+  const dt = Math.max(8, now - dragState.t);
+  const deltaAge = deltaX * 0.08;
+  moonVelocity = deltaAge / (dt / 16.67);
+  dragState.x = e.clientX;
+  dragState.t = now;
+  dragState.age = clamp(dragState.age + deltaAge, 0, SYNODIC_CYCLE);
+  applyManualPhase(dragState.age, true);
 });
 moonContainer.addEventListener('pointerup', e => { if (dragState && dragState.id === e.pointerId) dragState = null; });
 moonContainer.addEventListener('pointercancel', () => { dragState = null; });
