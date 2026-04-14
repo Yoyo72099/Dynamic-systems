@@ -8,8 +8,8 @@
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      background: linear-gradient(168deg, #1e2460 0%, #3d3578 28%, #6b4d9a 55%, #9d7ab8 78%, #d4a8d4 100%);
-      color: #fffef5;
+      background: #000000;
+      color: #f5f5f5;
       font-family: 'Space Mono', monospace;
       min-height: 100vh;
       overflow-x: hidden;
@@ -17,22 +17,22 @@
     #starfield { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
     .main { position: relative; z-index: 1; display: grid; grid-template-columns: 220px 1fr 220px; min-height: 100vh; padding: 30px; gap: 20px; }
     .topbar { grid-column: 1/-1; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.18); padding-bottom: 16px; }
-    .topbar-title { font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: 6px; color: rgba(255, 248, 255, 0.65); }
-    .topbar-status { font-size: 9px; letter-spacing: 3px; color: #a7f3d0; }
-    .topbar-date { font-size: 9px; letter-spacing: 2px; color: rgba(255, 248, 255, 0.5); }
+    .topbar-title { font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: 6px; color: rgba(212, 168, 75, 0.75); }
+    .topbar-status { font-size: 9px; letter-spacing: 3px; color: #7ee787; }
+    .topbar-date { font-size: 9px; letter-spacing: 2px; color: rgba(180, 190, 200, 0.5); }
     .panel-left, .panel-right { display: flex; flex-direction: column; gap: 20px; padding-top: 20px; }
     .data-block {
-      border: 1px solid rgba(255, 255, 255, 0.22);
+      border: 1px solid rgba(255, 255, 255, 0.12);
       padding: 16px;
       position: relative;
-      background: rgba(40, 30, 70, 0.35);
-      border-radius: 10px;
-      backdrop-filter: blur(6px);
+      background: rgba(8, 12, 20, 0.55);
+      border-radius: 8px;
+      backdrop-filter: blur(8px);
     }
-    .data-block::before { content: ''; position: absolute; top: -1px; left: 10px; width: 30px; height: 1px; background: #c4b5fd; }
-    .data-block-label { font-size: 8px; letter-spacing: 3px; color: rgba(255, 248, 255, 0.55); text-transform: uppercase; margin-bottom: 10px; }
+    .data-block::before { content: ''; position: absolute; top: -1px; left: 10px; width: 30px; height: 1px; background: #d4a84b; }
+    .data-block-label { font-size: 8px; letter-spacing: 3px; color: rgba(200, 210, 220, 0.55); text-transform: uppercase; margin-bottom: 10px; }
     .data-block-value { font-size: 22px; font-weight: 700; color: #fff; line-height: 1; }
-    .data-block-sub { font-size: 9px; color: rgba(255, 248, 255, 0.4); margin-top: 6px; letter-spacing: 1px; }
+    .data-block-sub { font-size: 9px; color: rgba(160, 175, 190, 0.45); margin-top: 6px; letter-spacing: 1px; }
     .illum-bar { width: 100%; height: 2px; background: rgba(255,255,255,0.08); margin-top: 10px; }
     .illum-fill { height: 100%; background: linear-gradient(90deg, rgba(255,255,255,0.1), #fff); transition: width 1.2s ease; }
 
@@ -72,7 +72,7 @@
       height: 100%;
       display: block;
       border-radius: 50%;
-      filter: drop-shadow(0 8px 24px rgba(20, 10, 40, 0.45)) drop-shadow(0 0 20px rgba(255, 250, 235, 0.15));
+      filter: drop-shadow(0 6px 20px rgba(0, 0, 0, 0.9)) drop-shadow(0 0 18px rgba(255, 255, 255, 0.08));
     }
 
     .moon-label { margin-top: 24px; text-align: center; }
@@ -81,7 +81,7 @@
     .phase-controls { margin-top: 14px; width: 260px; display: flex; flex-direction: column; gap: 8px; align-items: center; }
     .phase-slider-label { font-size: 8px; letter-spacing: 2px; color: rgba(255,255,255,0.35); text-transform: uppercase; }
     .phase-slider-row { width: 100%; display: flex; align-items: center; gap: 10px; }
-    #phaseSlider { width: 100%; accent-color: #c4b5fd; }
+    #phaseSlider { width: 100%; accent-color: #d4a84b; }
     .phase-slider-value { font-size: 9px; letter-spacing: 1px; color: rgba(255,255,255,0.5); min-width: 52px; text-align: right; }
     .phase-delta { font-size: 9px; letter-spacing: 1px; color: rgba(255,255,255,0.58); min-height: 14px; }
     .mode-row { display: flex; gap: 8px; }
@@ -96,7 +96,7 @@
     button:hover { border-color: rgba(255,255,255,0.4); color: #fff; }
     .status-bar { font-size: 9px; letter-spacing: 2px; color: rgba(255,255,255,0.2); margin-left: auto; }
     .status-bar.error { color: #f87171; }
-    .status-bar.ok { color: #a7f3d0; }
+    .status-bar.ok { color: #7ee787; }
 
     @media (max-width: 768px) {
       .main { grid-template-columns: 1fr; padding: 16px; }
@@ -389,132 +389,358 @@ function getPhaseNameFromAge(age) {
 
 const sf = document.getElementById('starfield');
 const sctx = sf.getContext('2d');
+const NEON = ['#00f5ff', '#ff2d95', '#c4ff00', '#ffb020', '#fff23a', '#7cfc00', '#ff6b9d', '#38bdf8', '#f472b6'];
 let stars = [];
-let cloudPuffs = [];
+let bgArcs = [];
+let skyT = 0;
+
+function drawFivePointStar(cx, cy, outerR, innerR, rot) {
+  sctx.beginPath();
+  for (let i = 0; i < 10; i++) {
+    const r = i % 2 === 0 ? outerR : innerR;
+    const a = rot + (i / 10) * Math.PI * 2 - Math.PI / 2;
+    const x = cx + Math.cos(a) * r;
+    const y = cy + Math.sin(a) * r;
+    if (i === 0) sctx.moveTo(x, y);
+    else sctx.lineTo(x, y);
+  }
+  sctx.closePath();
+}
+
 function initStars() {
   sf.width = window.innerWidth;
   sf.height = window.innerHeight;
   stars = [];
-  cloudPuffs = [];
-  const colors = ['#fffef0', '#fff8dc', '#e0f2fe', '#fce7f3', '#fef3c7', '#ddd6fe'];
-  for (let i = 0; i < 120; i++) {
-    stars.push({
-      x: Math.random() * sf.width,
-      y: Math.random() * sf.height * 0.92,
-      r: 1.2 + Math.random() * 2.8,
-      color: colors[Math.floor(Math.random() * colors.length)],
-      t: Math.random() * Math.PI * 2,
-      s: 0.008 + Math.random() * 0.018,
-      kind: Math.random() < 0.12 ? 'sparkle' : 'dot'
-    });
+  bgArcs = [];
+  for (let i = 0; i < 180; i++) {
+    const kindRoll = Math.random();
+    const kind = kindRoll < 0.45 ? 'dot' : kindRoll < 0.72 ? 'star' : 'square';
+    if (Math.random() < 0.35) {
+      const ocx = Math.random() * sf.width;
+      const ocy = Math.random() * sf.height;
+      const orad = 60 + Math.random() * 220;
+      stars.push({
+        kind,
+        color: NEON[Math.floor(Math.random() * NEON.length)],
+        ocx, ocy, orad,
+        ang: Math.random() * Math.PI * 2,
+        spd: (Math.random() - 0.5) * 0.012,
+        r: 1 + Math.random() * 2.5,
+        t: Math.random() * Math.PI * 2,
+        pulse: 0.01 + Math.random() * 0.02
+      });
+    } else {
+      stars.push({
+        kind,
+        color: NEON[Math.floor(Math.random() * NEON.length)],
+        x: Math.random() * sf.width,
+        y: Math.random() * sf.height,
+        r: 1 + Math.random() * 2.8,
+        t: Math.random() * Math.PI * 2,
+        pulse: 0.008 + Math.random() * 0.02
+      });
+    }
   }
-  for (let i = 0; i < 14; i++) {
-    cloudPuffs.push({
-      x: Math.random() * sf.width,
-      y: Math.random() * sf.height * 0.85 + sf.height * 0.08,
-      r: 80 + Math.random() * 140,
-      drift: (Math.random() - 0.5) * 0.15
+  for (let i = 0; i < 8; i++) {
+    bgArcs.push({
+      cx: Math.random() * sf.width,
+      cy: Math.random() * sf.height * 0.65,
+      r: 180 + Math.random() * 380,
+      start: Math.random() * Math.PI * 2,
+      sweep: 0.6 + Math.random() * 1.0,
+      rot: 0,
+      spd: (Math.random() - 0.5) * 0.0005
     });
   }
 }
-function drawCartoonSky() {
-  const g = sctx.createLinearGradient(0, 0, sf.width * 0.3, sf.height);
-  g.addColorStop(0, '#252b6e');
-  g.addColorStop(0.35, '#4a3d8a');
-  g.addColorStop(0.62, '#7b5ba3');
-  g.addColorStop(0.88, '#b89cc9');
-  g.addColorStop(1, '#e8c4e0');
-  sctx.fillStyle = g;
-  sctx.fillRect(0, 0, sf.width, sf.height);
 
-  cloudPuffs.forEach(c => {
-    c.x += c.drift;
-    if (c.x > sf.width + c.r) c.x = -c.r;
-    if (c.x < -c.r) c.x = sf.width + c.r;
-    const rg = sctx.createRadialGradient(c.x, c.y, 0, c.x, c.y, c.r);
-    rg.addColorStop(0, 'rgba(255, 240, 255, 0.42)');
-    rg.addColorStop(0.45, 'rgba(220, 200, 255, 0.18)');
-    rg.addColorStop(1, 'rgba(120, 80, 160, 0)');
-    sctx.fillStyle = rg;
+function drawBlueprintGrid() {
+  sctx.strokeStyle = 'rgba(20, 80, 40, 0.22)';
+  sctx.lineWidth = 1;
+  const step = 48;
+  for (let x = 0; x <= sf.width; x += step) {
     sctx.beginPath();
-    sctx.arc(c.x, c.y, c.r, 0, Math.PI * 2);
-    sctx.fill();
-  });
+    sctx.moveTo(x, 0);
+    sctx.lineTo(x, sf.height);
+    sctx.stroke();
+  }
+  for (let y = 0; y <= sf.height; y += step) {
+    sctx.beginPath();
+    sctx.moveTo(0, y);
+    sctx.lineTo(sf.width, y);
+    sctx.stroke();
+  }
 }
-function drawStars() {
-  drawCartoonSky();
+
+function drawBackgroundArcs() {
+  sctx.strokeStyle = 'rgba(255,255,255,0.12)';
+  sctx.lineWidth = 1;
+  sctx.setLineDash([6, 10]);
+  bgArcs.forEach(a => {
+    a.rot += a.spd;
+    sctx.beginPath();
+    sctx.arc(a.cx, a.cy, a.r, a.start + a.rot, a.start + a.sweep + a.rot);
+    sctx.stroke();
+  });
+  sctx.setLineDash([]);
+}
+
+function drawWavyTrail(color, phase, amp, y0) {
+  sctx.strokeStyle = color;
+  sctx.lineWidth = 1;
+  sctx.setLineDash([4, 6]);
+  sctx.beginPath();
+  for (let x = 0; x <= sf.width; x += 6) {
+    const y = y0 + Math.sin(x * 0.012 + phase) * amp + Math.sin(x * 0.005 + phase * 0.7) * amp * 0.4;
+    if (x === 0) sctx.moveTo(x, y);
+    else sctx.lineTo(x, y);
+  }
+  sctx.stroke();
+  sctx.setLineDash([]);
+}
+
+function drawStarsFrame() {
+  skyT += 0.008;
+  sctx.fillStyle = '#000000';
+  sctx.fillRect(0, 0, sf.width, sf.height);
+  drawBlueprintGrid();
+  drawBackgroundArcs();
+  drawWavyTrail('rgba(0,245,255,0.35)', skyT, 28, sf.height * 0.35);
+  drawWavyTrail('rgba(124,252,0,0.28)', skyT * 1.1 + 2, 22, sf.height * 0.55);
+
   stars.forEach(s => {
-    s.t += s.s;
-    const alpha = 0.55 + 0.45 * Math.abs(Math.sin(s.t));
+    s.t += s.pulse;
+    let x, y;
+    if (s.ocx != null) {
+      s.ang += s.spd;
+      x = s.ocx + Math.cos(s.ang) * s.orad;
+      y = s.ocy + Math.sin(s.ang) * s.orad;
+    } else {
+      x = s.x;
+      y = s.y;
+    }
+    const alpha = 0.65 + 0.35 * Math.abs(Math.sin(s.t));
     sctx.globalAlpha = alpha;
-    if (s.kind === 'sparkle') {
-      const len = s.r * 2.2;
-      sctx.strokeStyle = s.color;
-      sctx.lineWidth = 1.2;
-      sctx.beginPath();
-      sctx.moveTo(s.x - len, s.y);
-      sctx.lineTo(s.x + len, s.y);
-      sctx.moveTo(s.x, s.y - len);
-      sctx.lineTo(s.x, s.y + len);
-      sctx.stroke();
+    sctx.fillStyle = s.color;
+    sctx.strokeStyle = s.color;
+    if (s.kind === 'star') {
+      drawFivePointStar(x, y, s.r * 2.2, s.r * 0.9, s.t * 0.3);
+      sctx.fill();
+    } else if (s.kind === 'square') {
+      const h = s.r * 1.6;
+      sctx.fillRect(x - h, y - h, h * 2, h * 2);
     } else {
       sctx.beginPath();
-      sctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-      sctx.fillStyle = s.color;
+      sctx.arc(x, y, s.r, 0, Math.PI * 2);
       sctx.fill();
     }
   });
   sctx.globalAlpha = 1;
-  requestAnimationFrame(drawStars);
+  requestAnimationFrame(drawStarsFrame);
 }
 window.addEventListener('resize', initStars);
 initStars();
-requestAnimationFrame(drawStars);
+requestAnimationFrame(drawStarsFrame);
 
 const oc = document.getElementById('orbitCanvas');
 const octx = oc.getContext('2d');
-const CX = 170, CY = 170, R = 100;
-function drawOrbits() {
-  octx.clearRect(0, 0, oc.width, oc.height);
-  [R + 18, R + 34, R + 52].forEach((r, i) => {
+const CX = 170, CY = 170, R_MOON_VISUAL = 100;
+let orbitPhase = 0;
+
+function drawOrbitFourPointStar(x, y, size, rot, fill) {
+  octx.save();
+  octx.translate(x, y);
+  octx.rotate(rot);
+  octx.fillStyle = fill;
+  octx.beginPath();
+  octx.moveTo(0, -size);
+  octx.lineTo(size * 0.38, -size * 0.38);
+  octx.lineTo(size, 0);
+  octx.lineTo(size * 0.38, size * 0.38);
+  octx.lineTo(0, size);
+  octx.lineTo(-size * 0.38, size * 0.38);
+  octx.lineTo(-size, 0);
+  octx.lineTo(-size * 0.38, -size * 0.38);
+  octx.closePath();
+  octx.fill();
+  octx.restore();
+}
+
+function drawOrbitWavyDashed(color, cx, cy, radius, phase, dash) {
+  octx.strokeStyle = color;
+  octx.lineWidth = 1.2;
+  octx.setLineDash(dash || [5, 5]);
+  octx.beginPath();
+  const segs = 80;
+  for (let i = 0; i <= segs; i++) {
+    const t = (i / segs) * Math.PI * 2;
+    const wobble = Math.sin(t * 5 + phase) * 6 + Math.sin(t * 3 - phase * 0.7) * 4;
+    const r = radius + wobble;
+    const x = cx + Math.cos(t) * r;
+    const y = cy + Math.sin(t) * r;
+    if (i === 0) octx.moveTo(x, y);
+    else octx.lineTo(x, y);
+  }
+  octx.closePath();
+  octx.stroke();
+  octx.setLineDash([]);
+}
+
+function drawRadiatingWedges(cx, cy, rot) {
+  const n = 10;
+  for (let i = 0; i < n; i++) {
+    const a0 = (i / n) * Math.PI * 2 + rot;
+    const a1 = a0 + (Math.PI * 2) / n - 0.04;
     octx.beginPath();
-    octx.arc(CX, CY, r, 0, Math.PI * 2);
-    octx.strokeStyle = ['rgba(255,255,255,0.05)', 'rgba(255,255,255,0.07)', 'rgba(255,255,255,0.03)'][i];
-    octx.lineWidth = 1;
+    octx.moveTo(cx, cy);
+    octx.arc(cx, cy, 195, a0, a1);
+    octx.closePath();
+    const g = octx.createRadialGradient(cx, cy, 35, cx, cy, 190);
+    g.addColorStop(0, 'rgba(255, 248, 235, 0.14)');
+    g.addColorStop(0.45, 'rgba(180, 200, 230, 0.06)');
+    g.addColorStop(1, 'rgba(20, 40, 80, 0)');
+    octx.fillStyle = g;
+    octx.fill();
+  }
+}
+
+function drawOrnateRing(cx, cy, rOuter, rInner, gold, t) {
+  octx.strokeStyle = '#0d1f3d';
+  octx.lineWidth = 14;
+  octx.beginPath();
+  octx.arc(cx, cy, (rOuter + rInner) / 2, 0, Math.PI * 2);
+  octx.stroke();
+  octx.strokeStyle = 'rgba(212, 168, 75, 0.85)';
+  octx.lineWidth = 1.4;
+  octx.beginPath();
+  octx.arc(cx, cy, rOuter - 2, 0, Math.PI * 2);
+  octx.stroke();
+  octx.beginPath();
+  octx.arc(cx, cy, rInner + 2, 0, Math.PI * 2);
+  octx.stroke();
+  const n = 48;
+  for (let i = 0; i < n; i++) {
+    const a = (i / n) * Math.PI * 2 + t * 0.15;
+    const rm = (rOuter + rInner) / 2;
+    const x = cx + Math.cos(a) * rm;
+    const y = cy + Math.sin(a) * rm;
+    if (i % 4 === 0) {
+      octx.fillStyle = gold;
+      octx.beginPath();
+      octx.arc(x, y, 2.2, 0, Math.PI * 2);
+      octx.fill();
+      octx.strokeStyle = gold;
+      octx.lineWidth = 0.8;
+      octx.beginPath();
+      octx.moveTo(x, y - 5);
+      octx.lineTo(x, y + 5);
+      octx.moveTo(x - 5, y);
+      octx.lineTo(x + 5, y);
+      octx.stroke();
+    } else if (i % 2 === 0) {
+      octx.fillStyle = gold;
+      octx.save();
+      octx.translate(x, y);
+      octx.rotate(a + Math.PI / 2);
+      octx.fillRect(-1.2, -4, 2.4, 8);
+      octx.restore();
+    }
+  }
+  octx.setLineDash([2, 4]);
+  octx.strokeStyle = 'rgba(212, 168, 75, 0.55)';
+  octx.lineWidth = 1;
+  octx.beginPath();
+  octx.arc(cx, cy, rInner, 0, Math.PI * 2);
+  octx.stroke();
+  octx.setLineDash([]);
+}
+
+function drawOrbits() {
+  const w = oc.width, h = oc.height;
+  octx.clearRect(0, 0, w, h);
+  orbitPhase += 0.012;
+
+  drawRadiatingWedges(CX, CY, orbitPhase * 0.08);
+
+  octx.globalCompositeOperation = 'lighter';
+  drawOrbitFourPointStar(CX - 62, CY - 58, 52, orbitPhase * 0.05, 'rgba(56, 189, 248, 0.35)');
+  octx.globalCompositeOperation = 'source-over';
+
+  octx.strokeStyle = 'rgba(255,255,255,0.18)';
+  octx.lineWidth = 1;
+  [280, 320].forEach((rad, idx) => {
+    octx.beginPath();
+    octx.arc(CX - 40 + idx * 25, CY + 20, rad, -0.7 + orbitPhase * 0.02, 0.9 + orbitPhase * 0.02);
     octx.stroke();
   });
+  octx.setLineDash([8, 14]);
+  octx.strokeStyle = 'rgba(255,255,255,0.12)';
+  octx.beginPath();
+  octx.arc(CX + 120, CY - 80, 200, 0.2, 1.1);
+  octx.stroke();
+  octx.setLineDash([]);
+
+  drawOrbitWavyDashed('rgba(0,245,255,0.55)', CX, CY, R_MOON_VISUAL + 62, orbitPhase, [4, 6]);
+  drawOrbitWavyDashed('rgba(124,252,0,0.45)', CX, CY, R_MOON_VISUAL + 78, -orbitPhase * 1.1, [3, 7]);
+
+  drawOrnateRing(CX, CY, R_MOON_VISUAL + 56, R_MOON_VISUAL + 38, '#d4a84b', orbitPhase);
+
   for (let i = 0; i < 72; i++) {
-    const a = (i / 72) * Math.PI * 2, inner = R + 30, outer = R + 34 + (i % 6 === 0 ? 5 : 2);
+    const a = (i / 72) * Math.PI * 2 + orbitPhase * 0.03;
+    const inner = R_MOON_VISUAL + 28;
+    const outer = R_MOON_VISUAL + 32 + (i % 6 === 0 ? 6 : 2);
     octx.beginPath();
     octx.moveTo(CX + Math.cos(a) * inner, CY + Math.sin(a) * inner);
     octx.lineTo(CX + Math.cos(a) * outer, CY + Math.sin(a) * outer);
-    octx.strokeStyle = i % 6 === 0 ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.08)';
+    octx.strokeStyle = i % 6 === 0 ? 'rgba(212,168,75,0.55)' : 'rgba(255,255,255,0.12)';
     octx.lineWidth = 1;
     octx.stroke();
   }
+
   [
-    { angle: 0.6, r: R + 34, color: '#86efac', size: 5 },
-    { angle: 2.1, r: R + 34, color: '#93c5fd', size: 4 },
-    { angle: 3.8, r: R + 34, color: '#fef9c3', size: 3 },
-    { angle: 5.0, r: R + 34, color: '#a7f3d0', size: 6 },
-    { angle: 1.2, r: R + 52, color: '#c4b5fd', size: 3 },
-    { angle: 4.2, r: R + 52, color: '#fcd34d', size: 3 }
+    { angle: 0.6, r: R_MOON_VISUAL + 48, color: '#c4ff00', size: 5 },
+    { angle: 2.1, r: R_MOON_VISUAL + 48, color: '#00f5ff', size: 4 },
+    { angle: 3.8, r: R_MOON_VISUAL + 48, color: '#fff23a', size: 3 },
+    { angle: 5.0, r: R_MOON_VISUAL + 48, color: '#ff2d95', size: 5 },
+    { angle: 1.2, r: R_MOON_VISUAL + 66, color: '#38bdf8', size: 3 },
+    { angle: 4.2, r: R_MOON_VISUAL + 66, color: '#ffb020', size: 3 }
   ].forEach(d => {
     octx.beginPath();
-    octx.arc(CX + Math.cos(d.angle) * d.r, CY + Math.sin(d.angle) * d.r, d.size, 0, Math.PI * 2);
+    octx.arc(CX + Math.cos(d.angle + orbitPhase * 0.04) * d.r, CY + Math.sin(d.angle + orbitPhase * 0.04) * d.r, d.size, 0, Math.PI * 2);
     octx.fillStyle = d.color;
     octx.fill();
+    octx.strokeStyle = 'rgba(255,255,255,0.5)';
+    octx.lineWidth = 1;
+    octx.stroke();
   });
-  octx.strokeStyle = 'rgba(255,255,255,0.05)';
+
+  octx.strokeStyle = 'rgba(255,255,255,0.08)';
   octx.lineWidth = 1;
-  [[CX - R - 55, CY, CX + R + 55, CY], [CX, CY - R - 55, CX, CY + R + 55]].forEach(([x1, y1, x2, y2]) => {
+  [[CX - R_MOON_VISUAL - 55, CY, CX + R_MOON_VISUAL + 55, CY], [CX, CY - R_MOON_VISUAL - 55, CX, CY + R_MOON_VISUAL + 55]].forEach(([x1, y1, x2, y2]) => {
     octx.beginPath();
     octx.moveTo(x1, y1);
     octx.lineTo(x2, y2);
     octx.stroke();
   });
+
+  const ch = 14;
+  [[CX, CY - R_MOON_VISUAL - 8], [CX + R_MOON_VISUAL + 8, CY], [CX, CY + R_MOON_VISUAL + 8]].forEach(([x, y]) => {
+    octx.strokeStyle = 'rgba(255,255,255,0.35)';
+    octx.lineWidth = 1;
+    octx.beginPath();
+    octx.moveTo(x - ch, y);
+    octx.lineTo(x + ch, y);
+    octx.moveTo(x, y - ch);
+    octx.lineTo(x, y + ch);
+    octx.stroke();
+  });
 }
-drawOrbits();
+
+function animateOrbitDecor() {
+  drawOrbits();
+  requestAnimationFrame(animateOrbitDecor);
+}
+animateOrbitDecor();
 
 function estimateTimezoneFromLongitude(lon) {
   return Math.round(lon / 15);
@@ -783,6 +1009,7 @@ if (navigator.geolocation) {
 </script>
 </body>
 </html>
+
 
 
 
