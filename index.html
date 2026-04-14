@@ -456,11 +456,54 @@ function drawOrbits() {
 }
 drawOrbits();
 
-async function fetchNavyData(lat, lon) {
-  const now = new Date();
-  const date = now.toISOString().split('T')[0];
-  const tz = Math.round(lon / 15);
-  const url = `https://aa.usno.navy.mil/api/rstt/oneday?date=${date}&coords=${lat.toFixed(2)},${lon.toFixed(2)}&tz=${tz}&dst=false`;
+function estimateTimezoneFromLongitude(lon) {
+  return Math.round(lon / 15);
+}
+
+function getLocalDateForOffset(offsetHours) {
+  const localLike = new Date(Date.now() + offsetHours * 3600 * 1000);
+  return localLike.toISOString().split('T')[0];
+}
+
+async function fetchTimezoneInfo(lat, lon) {
+  try {
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat.toFixed(4)}&longitude=${lon.toFixed(4)}&current=is_day&timezone=auto`;
+    const res = await fetch(url);
+    const data = await res.json();
+    const offsetHours = Number.isFinite(data.utc_offset_seconds) ? data.utc_offset_seconds / 3600 : estimateTimezoneFromLongitude(lon);
+    return {
+      timezone: data.timezone || 'Etc/UTC',
+      offsetHours,
+      localDate: getLocalDateForOffset(offsetHours)
+    };
+  } catch {
+    const offsetHours = estimateTimezoneFromLongitude(lon);
+    return {
+      timezone: 'Estimated',
+      offsetHours,
+      localDate: getLocalDateForOffset(offsetHours)
+    };
+  }
+}
+
+function calculateMoonPhaseAt(dateMs) {
+  // Astronomical approximation anchored to J2000-era new moon epoch.
+  const julianDate = dateMs / 86400000 + 2440587.5;
+  const daysSinceEpochNewMoon = julianDate - 2451550.1;
+  const cycles = daysSinceEpochNewMoon / SYNODIC_CYCLE;
+  let frac = cycles - Math.floor(cycles);
+  if (frac < 0) frac += 1;
+  const age = frac * SYNODIC_CYCLE;
+  const illumination = 100 * 0.5 * (1 - Math.cos(2 * Math.PI * frac));
+  return {
+    age,
+    illumination,
+    phaseName: getPhaseNameFromAge(age)
+  };
+}
+
+async function fetchNavyData(lat, lon, localDate, offsetHours) {
+  const url = `https://aa.usno.navy.mil/api/rstt/oneday?date=${localDate}&coords=${lat.toFixed(2)},${lon.toFixed(2)}&tz=${offsetHours.toFixed(2)}&dst=false`;
   const res = await fetch(url);
   return await res.json();
 }
@@ -535,42 +578,34 @@ function applyManualPhase(age, silent) {
 async function getMoonData(lat, lon, city) {
   setStatus('fetching real lunar data...', '');
   let phaseName = '—', illumination = 0, moonriseTime = '—', moonsetTime = '—', moonAge = null;
+  const tzInfo = await fetchTimezoneInfo(lat, lon);
+  const precise = calculateMoonPhaseAt(Date.now());
+  phaseName = precise.phaseName;
+  illumination = Math.round(precise.illumination);
+  moonAge = precise.age;
   try {
-    const data = await fetchNavyData(lat, lon);
+    const data = await fetchNavyData(lat, lon, tzInfo.localDate, tzInfo.offsetHours);
     const d = data.properties?.data;
     if (d) {
-      const frac = Number(d.fracillum);
-      illumination = Number.isFinite(frac) ? Math.round(frac * 100) : 0;
-      phaseName = d.curphase || 'Full Moon';
-      const parsedAge = Number(d.moonage);
-      moonAge = Number.isFinite(parsedAge) ? parsedAge : null;
       (d.moondata || []).forEach(p => {
         if (p.phen === 'Rise') moonriseTime = p.time;
         if (p.phen === 'Set') moonsetTime = p.time;
       });
-      setStatus('US Navy Astronomical API · signal acquired', 'ok');
+      setStatus(`precise lunar model + US Navy rise/set · ${tzInfo.timezone}`, 'ok');
     }
   } catch {
     try {
       const unix = Math.floor(Date.now() / 1000);
       const fs = await fetch(`https://api.farmsense.net/v1/moonphases/?d=${unix}`);
       const fd = await fs.json();
-      const frac = Number(fd[0]?.Illumination);
-      illumination = Number.isFinite(frac) ? Math.round(frac * 100) : 0;
-      phaseName = fd[0]?.Phase || 'Full Moon';
-      const parsedAge = Number(fd[0]?.Age);
-      moonAge = Number.isFinite(parsedAge) ? parsedAge : null;
-      setStatus('FarmSense API · signal acquired', 'ok');
+      if (!moonriseTime || moonriseTime === '—') moonriseTime = fd[0]?.Moonrise || '—';
+      if (!moonsetTime || moonsetTime === '—') moonsetTime = fd[0]?.Moonset || '—';
+      setStatus(`precise lunar model + fallback rise/set · ${tzInfo.timezone}`, 'ok');
     } catch {
-      setStatus('API error', 'error');
+      setStatus(`precise lunar model only · ${tzInfo.timezone}`, 'ok');
     }
   }
-  if (!Number.isFinite(moonAge)) {
-    moonAge = deriveAgeFromPhase(phaseName, illumination);
-  }
-  if (!phaseName || phaseName === '—') {
-    phaseName = getPhaseNameFromAge(moonAge || 0);
-  }
+  phaseName = getPhaseNameFromAge(moonAge);
   return { lat, lon, city, phaseName, illumination, moonriseTime, moonsetTime, moonAge };
 }
 
@@ -688,6 +723,7 @@ if (navigator.geolocation) {
 </script>
 </body>
 </html>
+
 
 
 
