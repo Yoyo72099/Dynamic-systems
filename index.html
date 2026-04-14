@@ -50,6 +50,7 @@
       position: relative;
       z-index: 2;
       border: 1px solid rgba(255,255,255,0.1);
+      touch-action: none;
     }
 
     #moonImg {
@@ -77,6 +78,13 @@
     .moon-label { margin-top: 24px; text-align: center; }
     .moon-phase-name { font-family: 'Cinzel', serif; font-size: 18px; letter-spacing: 4px; color: #fff; margin-bottom: 6px; }
     .moon-location { font-size: 9px; letter-spacing: 3px; color: rgba(255,255,255,0.3); }
+    .phase-controls { margin-top: 14px; width: 260px; display: flex; flex-direction: column; gap: 8px; align-items: center; }
+    .phase-slider-label { font-size: 8px; letter-spacing: 2px; color: rgba(255,255,255,0.35); text-transform: uppercase; }
+    .phase-slider-row { width: 100%; display: flex; align-items: center; gap: 10px; }
+    #phaseSlider { width: 100%; accent-color: #4ade80; }
+    .phase-slider-value { font-size: 9px; letter-spacing: 1px; color: rgba(255,255,255,0.5); min-width: 52px; text-align: right; }
+    .mode-row { display: flex; gap: 8px; }
+    .mode-btn { padding: 6px 10px; font-size: 8px; letter-spacing: 2px; }
 
     .bottombar { grid-column: 1/-1; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 20px; display: flex; align-items: center; gap: 16px; }
     .search-label { font-size: 9px; letter-spacing: 3px; color: rgba(255,255,255,0.2); white-space: nowrap; }
@@ -140,6 +148,17 @@
     <div class="moon-label">
       <div class="moon-phase-name" id="phaseName">DETECTING</div>
       <div class="moon-location" id="locationName">locating observer</div>
+      <div class="phase-controls">
+        <div class="phase-slider-label">Drag moon or slider to scrub phase</div>
+        <div class="phase-slider-row">
+          <input id="phaseSlider" type="range" min="0" max="29.53" step="0.1" value="0" />
+          <div class="phase-slider-value" id="phaseSliderValue">0.0d</div>
+        </div>
+        <div class="mode-row">
+          <button class="mode-btn" id="manualBtn" type="button">Manual Phase</button>
+          <button class="mode-btn" id="liveBtn" type="button">Resume Live</button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -175,32 +194,50 @@
 </div>
 
 <script>
-// ── Real moon phase photos (Wikimedia Commons, public domain) ──
 const MOON_PHOTOS = {
-  'New Moon':        'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/New_Moon.jpg/600px-New_Moon.jpg',
+  'New Moon': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/New_Moon.jpg/600px-New_Moon.jpg',
   'Waxing Crescent': 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/WaxingCrescentMoon.jpg/600px-WaxingCrescentMoon.jpg',
-  'First Quarter':   'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/Moon_first_quarter.jpg/600px-Moon_first_quarter.jpg',
-  'Waxing Gibbous':  'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/Waxing_gibbous_moon_over_Vancouver_Island.jpg/600px-Waxing_gibbous_moon_over_Vancouver_Island.jpg',
-  'Full Moon':       'https://upload.wikimedia.org/wikipedia/commons/thumb/4/40/Full_moon.jpeg/600px-Full_moon.jpeg',
-  'Waning Gibbous':  'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Waning_gibbous_moon_over_Sevilla.jpg/600px-Waning_gibbous_moon_over_Sevilla.jpg',
-  'Last Quarter':    'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c7/Moon_at_last_quarter_-_20100319.jpg/600px-Moon_at_last_quarter_-_20100319.jpg',
-  'Waning Crescent': 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f0/Waning_Crescent_Moon.jpg/600px-Waning_Crescent_Moon.jpg',
+  'First Quarter': 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/Moon_first_quarter.jpg/600px-Moon_first_quarter.jpg',
+  'Waxing Gibbous': 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/Waxing_gibbous_moon_over_Vancouver_Island.jpg/600px-Waxing_gibbous_moon_over_Vancouver_Island.jpg',
+  'Full Moon': 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/40/Full_moon.jpeg/600px-Full_moon.jpeg',
+  'Waning Gibbous': 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Waning_gibbous_moon_over_Sevilla.jpg/600px-Waning_gibbous_moon_over_Sevilla.jpg',
+  'Last Quarter': 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c7/Moon_at_last_quarter_-_20100319.jpg/600px-Moon_at_last_quarter_-_20100319.jpg',
+  'Waning Crescent': 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f0/Waning_Crescent_Moon.jpg/600px-Waning_Crescent_Moon.jpg'
 };
+
+const SYNODIC_CYCLE = 29.53058867;
+let currentMode = 'live';
+let latestLive = null;
+let latestSearch = null;
+let lastLiveFetchMs = 0;
+let dragState = null;
+
+function clamp(v, min, max) {
+  return Math.min(max, Math.max(min, v));
+}
+
+function getPhaseNameFromAge(age) {
+  const a = ((age % SYNODIC_CYCLE) + SYNODIC_CYCLE) % SYNODIC_CYCLE;
+  if (a < 1.84566 || a >= 27.68493) return 'New Moon';
+  if (a < 5.53699) return 'Waxing Crescent';
+  if (a < 9.22831) return 'First Quarter';
+  if (a < 12.91963) return 'Waxing Gibbous';
+  if (a < 16.61096) return 'Full Moon';
+  if (a < 20.30228) return 'Waning Gibbous';
+  if (a < 23.99361) return 'Last Quarter';
+  return 'Waning Crescent';
+}
 
 function setMoonPhoto(phaseName) {
   const img = document.getElementById('moonImg');
   const loading = document.getElementById('moonLoading');
-
-  // Match phase name to photo key
   const key = Object.keys(MOON_PHOTOS).find(k =>
     phaseName.toLowerCase().includes(k.toLowerCase()) ||
-    k.toLowerCase().includes(phaseName.toLowerCase().split(' ').slice(0,2).join(' '))
+    k.toLowerCase().includes(phaseName.toLowerCase().split(' ').slice(0, 2).join(' '))
   ) || 'Full Moon';
-
   const url = MOON_PHOTOS[key];
   img.style.opacity = '0';
   loading.style.display = 'flex';
-
   const tempImg = new Image();
   tempImg.crossOrigin = 'anonymous';
   tempImg.onload = () => {
@@ -209,7 +246,6 @@ function setMoonPhoto(phaseName) {
     loading.style.display = 'none';
   };
   tempImg.onerror = () => {
-    // fallback to full moon if image fails
     img.src = MOON_PHOTOS['Full Moon'];
     img.style.opacity = '1';
     loading.style.display = 'none';
@@ -217,177 +253,275 @@ function setMoonPhoto(phaseName) {
   tempImg.src = url;
 }
 
-// ── Starfield ──────────────────────────────────────────
 const sf = document.getElementById('starfield');
 const sctx = sf.getContext('2d');
 let stars = [];
 function initStars() {
-  sf.width = window.innerWidth; sf.height = window.innerHeight; stars = [];
-  const colors = ['#fff','#a5f3fc','#fde68a','#c4b5fd','#86efac'];
+  sf.width = window.innerWidth;
+  sf.height = window.innerHeight;
+  stars = [];
+  const colors = ['#fff', '#a5f3fc', '#fde68a', '#c4b5fd', '#86efac'];
   for (let i = 0; i < 250; i++) {
-    stars.push({ x: Math.random()*sf.width, y: Math.random()*sf.height,
-      r: Math.random()*1.2, color: colors[Math.floor(Math.random()*colors.length)],
-      t: Math.random()*Math.PI*2, s: 0.01+Math.random()*0.02, big: Math.random()<0.035 });
+    stars.push({
+      x: Math.random() * sf.width,
+      y: Math.random() * sf.height,
+      r: Math.random() * 1.2,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      t: Math.random() * Math.PI * 2,
+      s: 0.01 + Math.random() * 0.02,
+      big: Math.random() < 0.035
+    });
   }
 }
 function drawStars() {
-  sctx.clearRect(0,0,sf.width,sf.height);
+  sctx.clearRect(0, 0, sf.width, sf.height);
   stars.forEach(s => {
     s.t += s.s;
-    const alpha = s.big ? 0.9 : 0.3+0.4*Math.abs(Math.sin(s.t));
+    const alpha = s.big ? 0.9 : 0.3 + 0.4 * Math.abs(Math.sin(s.t));
     sctx.beginPath();
-    sctx.arc(s.x, s.y, s.big ? 4+Math.sin(s.t)*1.5 : s.r, 0, Math.PI*2);
-    sctx.fillStyle = s.color; sctx.globalAlpha = alpha; sctx.fill();
+    sctx.arc(s.x, s.y, s.big ? 4 + Math.sin(s.t) * 1.5 : s.r, 0, Math.PI * 2);
+    sctx.fillStyle = s.color;
+    sctx.globalAlpha = alpha;
+    sctx.fill();
   });
   sctx.globalAlpha = 1;
   requestAnimationFrame(drawStars);
 }
 window.addEventListener('resize', initStars);
-initStars(); requestAnimationFrame(drawStars);
+initStars();
+requestAnimationFrame(drawStars);
 
-// ── Orbit rings canvas ─────────────────────────────────
 const oc = document.getElementById('orbitCanvas');
 const octx = oc.getContext('2d');
-const CX=170, CY=170, R=100;
-
+const CX = 170, CY = 170, R = 100;
 function drawOrbits() {
-  octx.clearRect(0,0,oc.width,oc.height);
-  [R+18,R+34,R+52].forEach((r,i) => {
-    octx.beginPath(); octx.arc(CX,CY,r,0,Math.PI*2);
-    octx.strokeStyle=['rgba(255,255,255,0.05)','rgba(255,255,255,0.07)','rgba(255,255,255,0.03)'][i];
-    octx.lineWidth=1; octx.stroke();
-  });
-  for (let i=0;i<72;i++) {
-    const a=(i/72)*Math.PI*2, inner=R+30, outer=R+34+(i%6===0?5:2);
+  octx.clearRect(0, 0, oc.width, oc.height);
+  [R + 18, R + 34, R + 52].forEach((r, i) => {
     octx.beginPath();
-    octx.moveTo(CX+Math.cos(a)*inner, CY+Math.sin(a)*inner);
-    octx.lineTo(CX+Math.cos(a)*outer, CY+Math.sin(a)*outer);
-    octx.strokeStyle = i%6===0?'rgba(255,255,255,0.3)':'rgba(255,255,255,0.08)';
-    octx.lineWidth=1; octx.stroke();
+    octx.arc(CX, CY, r, 0, Math.PI * 2);
+    octx.strokeStyle = ['rgba(255,255,255,0.05)', 'rgba(255,255,255,0.07)', 'rgba(255,255,255,0.03)'][i];
+    octx.lineWidth = 1;
+    octx.stroke();
+  });
+  for (let i = 0; i < 72; i++) {
+    const a = (i / 72) * Math.PI * 2, inner = R + 30, outer = R + 34 + (i % 6 === 0 ? 5 : 2);
+    octx.beginPath();
+    octx.moveTo(CX + Math.cos(a) * inner, CY + Math.sin(a) * inner);
+    octx.lineTo(CX + Math.cos(a) * outer, CY + Math.sin(a) * outer);
+    octx.strokeStyle = i % 6 === 0 ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.08)';
+    octx.lineWidth = 1;
+    octx.stroke();
   }
-  [{angle:0.6,r:R+34,color:'#4ade80',size:5},{angle:2.1,r:R+34,color:'#60a5fa',size:4},
-   {angle:3.8,r:R+34,color:'#fff',size:3},{angle:5.0,r:R+34,color:'#4ade80',size:6},
-   {angle:1.2,r:R+52,color:'#60a5fa',size:3},{angle:4.2,r:R+52,color:'#fde68a',size:3}]
-  .forEach(d => {
+  [
+    { angle: 0.6, r: R + 34, color: '#4ade80', size: 5 },
+    { angle: 2.1, r: R + 34, color: '#60a5fa', size: 4 },
+    { angle: 3.8, r: R + 34, color: '#fff', size: 3 },
+    { angle: 5.0, r: R + 34, color: '#4ade80', size: 6 },
+    { angle: 1.2, r: R + 52, color: '#60a5fa', size: 3 },
+    { angle: 4.2, r: R + 52, color: '#fde68a', size: 3 }
+  ].forEach(d => {
     octx.beginPath();
-    octx.arc(CX+Math.cos(d.angle)*d.r, CY+Math.sin(d.angle)*d.r, d.size, 0, Math.PI*2);
-    octx.fillStyle=d.color; octx.fill();
+    octx.arc(CX + Math.cos(d.angle) * d.r, CY + Math.sin(d.angle) * d.r, d.size, 0, Math.PI * 2);
+    octx.fillStyle = d.color;
+    octx.fill();
   });
-  octx.strokeStyle='rgba(255,255,255,0.05)'; octx.lineWidth=1;
-  [[CX-R-55,CY,CX+R+55,CY],[CX,CY-R-55,CX,CY+R+55]].forEach(([x1,y1,x2,y2])=>{
-    octx.beginPath(); octx.moveTo(x1,y1); octx.lineTo(x2,y2); octx.stroke();
+  octx.strokeStyle = 'rgba(255,255,255,0.05)';
+  octx.lineWidth = 1;
+  [[CX - R - 55, CY, CX + R + 55, CY], [CX, CY - R - 55, CX, CY + R + 55]].forEach(([x1, y1, x2, y2]) => {
+    octx.beginPath();
+    octx.moveTo(x1, y1);
+    octx.lineTo(x2, y2);
+    octx.stroke();
   });
 }
 drawOrbits();
 
-// ── US Navy API ────────────────────────────────────────
 async function fetchNavyData(lat, lon) {
   const now = new Date();
   const date = now.toISOString().split('T')[0];
-  const tz = -(now.getTimezoneOffset()/60);
+  const tz = -(now.getTimezoneOffset() / 60);
   const url = `https://aa.usno.navy.mil/api/rstt/oneday?date=${date}&coords=${lat.toFixed(2)},${lon.toFixed(2)}&tz=${tz}&dst=true`;
   const res = await fetch(url);
   return await res.json();
 }
 
+function setStatus(msg, type) {
+  const el = document.getElementById('status');
+  el.textContent = msg;
+  el.className = 'status-bar' + (type ? ' ' + type : '');
+}
+
+function updateMoonCycleDerivedValues(ageRaw) {
+  const age = Number.isFinite(ageRaw) ? ageRaw : null;
+  document.getElementById('nextFull').textContent = age === null ? '—' : (age < 14.77 ? 14.77 - age : SYNODIC_CYCLE - age + 14.77).toFixed(1);
+  document.getElementById('nextNew').textContent = age === null ? '—' : (SYNODIC_CYCLE - age).toFixed(1);
+  document.getElementById('cycleProgress').textContent = age === null ? '—' : Math.round((age / SYNODIC_CYCLE) * 100) + '%';
+}
+
+function applyMoonDataToUI(data) {
+  const latLabel = `${Math.abs(data.lat).toFixed(2)}° ${data.lat < 0 ? 'S' : 'N'}`;
+  const lonLabel = `${Math.abs(data.lon).toFixed(2)}° ${data.lon < 0 ? 'W' : 'E'}`;
+  document.getElementById('phaseName').textContent = data.phaseName.toUpperCase();
+  document.getElementById('locationName').textContent = data.city.toUpperCase();
+  document.getElementById('illumination').textContent = data.illumination + '%';
+  document.getElementById('illumFill').style.width = data.illumination + '%';
+  document.getElementById('moonAge').textContent = data.moonAge === null ? '—' : data.moonAge.toFixed(1);
+  document.getElementById('coordDisplay').textContent = `${latLabel}\n${lonLabel}`;
+  document.getElementById('locationSub').textContent = data.city.toLowerCase();
+  document.getElementById('moonrise').textContent = data.moonriseTime;
+  document.getElementById('moonset').textContent = data.moonsetTime;
+  updateMoonCycleDerivedValues(data.moonAge);
+  setMoonPhoto(data.phaseName);
+  if (data.moonAge !== null) {
+    document.getElementById('phaseSlider').value = data.moonAge.toFixed(1);
+    document.getElementById('phaseSliderValue').textContent = `${data.moonAge.toFixed(1)}d`;
+  }
+}
+
+function applyManualPhase(age) {
+  const source = currentMode === 'search' ? latestSearch : latestLive;
+  if (!source) return;
+  const safeAge = clamp(age, 0, SYNODIC_CYCLE);
+  const illum = Math.round(100 * 0.5 * (1 - Math.cos((2 * Math.PI * safeAge) / SYNODIC_CYCLE)));
+  const phase = getPhaseNameFromAge(safeAge);
+  document.getElementById('phaseName').textContent = phase.toUpperCase();
+  document.getElementById('illumination').textContent = illum + '%';
+  document.getElementById('illumFill').style.width = illum + '%';
+  document.getElementById('moonAge').textContent = safeAge.toFixed(1);
+  updateMoonCycleDerivedValues(safeAge);
+  document.getElementById('phaseSlider').value = safeAge.toFixed(1);
+  document.getElementById('phaseSliderValue').textContent = `${safeAge.toFixed(1)}d`;
+  setMoonPhoto(phase);
+  setStatus('manual phase preview', '');
+}
+
 async function getMoonData(lat, lon, city) {
   setStatus('fetching real lunar data...', '');
-  let phaseName='—', illumination=0, moonriseTime='—', moonsetTime='—', moonAge='—';
-
+  let phaseName = '—', illumination = 0, moonriseTime = '—', moonsetTime = '—', moonAge = null;
   try {
     const data = await fetchNavyData(lat, lon);
     const d = data.properties?.data;
     if (d) {
-      illumination = Math.round((d.fracillum || 0) * 100);
+      const frac = Number(d.fracillum);
+      illumination = Number.isFinite(frac) ? Math.round(frac * 100) : 0;
       phaseName = d.curphase || 'Full Moon';
-      moonAge = d.moonage ? d.moonage.toFixed(1) : '—';
+      const parsedAge = Number(d.moonage);
+      moonAge = Number.isFinite(parsedAge) ? parsedAge : null;
       (d.moondata || []).forEach(p => {
-        if (p.phen==='Rise') moonriseTime = p.time;
-        if (p.phen==='Set')  moonsetTime  = p.time;
+        if (p.phen === 'Rise') moonriseTime = p.time;
+        if (p.phen === 'Set') moonsetTime = p.time;
       });
       setStatus('US Navy Astronomical API · signal acquired', 'ok');
     }
   } catch {
-    // Fallback: FarmSense
     try {
-      const unix = Math.floor(Date.now()/1000);
+      const unix = Math.floor(Date.now() / 1000);
       const fs = await fetch(`https://api.farmsense.net/v1/moonphases/?d=${unix}`);
       const fd = await fs.json();
-      illumination = Math.round((fd[0].Illumination||0)*100);
-      phaseName = fd[0].Phase || 'Full Moon';
-      moonAge = fd[0].Age ? fd[0].Age.toFixed(1) : '—';
+      const frac = Number(fd[0]?.Illumination);
+      illumination = Number.isFinite(frac) ? Math.round(frac * 100) : 0;
+      phaseName = fd[0]?.Phase || 'Full Moon';
+      const parsedAge = Number(fd[0]?.Age);
+      moonAge = Number.isFinite(parsedAge) ? parsedAge : null;
       setStatus('FarmSense API · signal acquired', 'ok');
     } catch {
       setStatus('API error', 'error');
     }
   }
-
-  const syn=29.53058867, age=parseFloat(moonAge)||0;
-  const toFull = (age<14.77 ? 14.77-age : syn-age+14.77).toFixed(1);
-  const toNew  = (syn-age).toFixed(1);
-
-  document.getElementById('phaseName').textContent    = phaseName.toUpperCase();
-  document.getElementById('locationName').textContent = city.toUpperCase();
-  document.getElementById('illumination').textContent = illumination+'%';
-  document.getElementById('illumFill').style.width    = illumination+'%';
-  document.getElementById('moonAge').textContent       = moonAge;
-  document.getElementById('cycleProgress').textContent = age ? Math.round((age/syn)*100)+'%' : '—';
-  document.getElementById('coordDisplay').textContent  = `${lat.toFixed(2)}°\n${Math.abs(lon).toFixed(2)}° ${lon<0?'W':'E'}`;
-  document.getElementById('locationSub').textContent   = city.toLowerCase();
-  document.getElementById('moonrise').textContent      = moonriseTime;
-  document.getElementById('moonset').textContent       = moonsetTime;
-  document.getElementById('nextFull').textContent      = toFull;
-  document.getElementById('nextNew').textContent       = toNew;
-
-  setMoonPhoto(phaseName);
+  return { lat, lon, city, phaseName, illumination, moonriseTime, moonsetTime, moonAge };
 }
 
-function setStatus(msg, type) {
-  const el = document.getElementById('status');
-  el.textContent = msg;
-  el.className = 'status-bar'+(type?' '+type:'');
+async function refreshMoonData(lat, lon, city, sourceMode) {
+  const data = await getMoonData(lat, lon, city);
+  if (sourceMode === 'live') latestLive = data;
+  if (sourceMode === 'search') latestSearch = data;
+  if (currentMode === sourceMode) applyMoonDataToUI(data);
 }
 
 async function getCityName(lat, lon) {
   try {
     const r = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&accept-language=en`);
     const d = await r.json();
-    const raw = d.address?.city||d.address?.town||d.address?.village||d.address?.county||'Unknown';
-    // Keep only ASCII characters (remove any CJK or non-latin)
+    const raw = d.address?.city || d.address?.town || d.address?.village || d.address?.county || 'Unknown';
     return raw.replace(/[^\x00-\x7F]/g, '').replace(/;.*/, '').trim() || 'Unknown';
-  } catch { return 'Unknown'; }
+  } catch {
+    return 'Unknown';
+  }
 }
 
 async function searchCity() {
   const v = document.getElementById('cityInput').value.trim();
   if (!v) return;
-  setStatus('searching...','');
+  currentMode = 'search';
+  setStatus('searching...', '');
   try {
     const r = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(v)}&format=json&limit=1&accept-language=en`);
     const d = await r.json();
-    if (!d.length) { setStatus('city not found','error'); return; }
-    getMoonData(parseFloat(d[0].lat), parseFloat(d[0].lon), v.charAt(0).toUpperCase()+v.slice(1));
-    document.getElementById('cityInput').value='';
-  } catch { setStatus('search error','error'); }
+    if (!d.length) {
+      setStatus('city not found', 'error');
+      return;
+    }
+    await refreshMoonData(parseFloat(d[0].lat), parseFloat(d[0].lon), v.charAt(0).toUpperCase() + v.slice(1), 'search');
+    document.getElementById('cityInput').value = '';
+  } catch {
+    setStatus('search error', 'error');
+  }
 }
 
-document.getElementById('cityInput').addEventListener('keydown', e => { if(e.key==='Enter') searchCity(); });
+document.getElementById('cityInput').addEventListener('keydown', e => { if (e.key === 'Enter') searchCity(); });
+document.getElementById('phaseSlider').addEventListener('input', e => applyManualPhase(Number(e.target.value)));
+document.getElementById('manualBtn').addEventListener('click', () => applyManualPhase(Number(document.getElementById('phaseSlider').value)));
+document.getElementById('liveBtn').addEventListener('click', () => {
+  currentMode = 'live';
+  if (latestLive) {
+    applyMoonDataToUI(latestLive);
+    setStatus('resumed live location feed', 'ok');
+  } else {
+    setStatus('waiting for live signal...', '');
+  }
+});
 
-const n=new Date();
+const moonContainer = document.querySelector('.moon-img-container');
+moonContainer.addEventListener('pointerdown', e => {
+  dragState = { id: e.pointerId, x: e.clientX, age: Number(document.getElementById('phaseSlider').value) };
+  moonContainer.setPointerCapture(e.pointerId);
+});
+moonContainer.addEventListener('pointermove', e => {
+  if (!dragState || dragState.id !== e.pointerId) return;
+  const deltaX = e.clientX - dragState.x;
+  applyManualPhase(clamp(dragState.age + deltaX * 0.08, 0, SYNODIC_CYCLE));
+});
+moonContainer.addEventListener('pointerup', e => { if (dragState && dragState.id === e.pointerId) dragState = null; });
+moonContainer.addEventListener('pointercancel', () => { dragState = null; });
+
+const n = new Date();
 document.getElementById('dateDisplay').textContent =
-  n.toISOString().split('T')[0]+' · UTC'+(n.getTimezoneOffset()/-60>=0?'+':'')+(n.getTimezoneOffset()/-60);
+  n.toISOString().split('T')[0] + ' · UTC' + (n.getTimezoneOffset() / -60 >= 0 ? '+' : '') + (n.getTimezoneOffset() / -60);
+
+async function handleLivePosition(pos) {
+  const now = Date.now();
+  if (now - lastLiveFetchMs < 45000) return;
+  lastLiveFetchMs = now;
+  const lat = pos.coords.latitude;
+  const lon = pos.coords.longitude;
+  const city = await getCityName(lat, lon);
+  await refreshMoonData(lat, lon, city, 'live');
+}
 
 if (navigator.geolocation) {
-  setStatus('locating observer...','');
+  setStatus('locating observer...', '');
+  navigator.geolocation.watchPosition(
+    handleLivePosition,
+    () => refreshMoonData(40.7128, -74.0060, 'New York', 'live'),
+    { enableHighAccuracy: true, timeout: 9000, maximumAge: 30000 }
+  );
   navigator.geolocation.getCurrentPosition(
-    async pos => {
-      const city = await getCityName(pos.coords.latitude, pos.coords.longitude);
-      getMoonData(pos.coords.latitude, pos.coords.longitude, city);
-    },
-    () => getMoonData(40.7128,-74.0060,'New York')
+    handleLivePosition,
+    () => refreshMoonData(40.7128, -74.0060, 'New York', 'live'),
+    { enableHighAccuracy: true, timeout: 9000, maximumAge: 0 }
   );
 } else {
-  getMoonData(40.7128,-74.0060,'New York');
+  refreshMoonData(40.7128, -74.0060, 'New York', 'live');
 }
 </script>
 </body>
