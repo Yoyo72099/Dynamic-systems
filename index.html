@@ -180,9 +180,13 @@
   </div>
 </div>
 
-<script src="https://unpkg.com/three@0.161.0/build/three.min.js"></script>
 <script>
 const SYNODIC_CYCLE = 29.53058867;
+const THREE_CDN_CANDIDATES = [
+  'https://unpkg.com/three@0.161.0/build/three.min.js',
+  'https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.min.js',
+  'https://cdnjs.cloudflare.com/ajax/libs/three.js/r161/three.min.js'
+];
 let currentMode = 'live';
 let latestLive = null;
 let latestSearch = null;
@@ -198,6 +202,31 @@ let moonScene = null;
 let moonCamera = null;
 let moonMesh = null;
 let moonLight = null;
+let moonFillLight = null;
+
+function loadScriptOnce(src) {
+  return new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = src;
+    s.async = true;
+    s.onload = () => resolve(true);
+    s.onerror = () => reject(new Error(`failed: ${src}`));
+    document.head.appendChild(s);
+  });
+}
+
+async function ensureThreeLoaded() {
+  if (window.THREE) return true;
+  for (const src of THREE_CDN_CANDIDATES) {
+    try {
+      await loadScriptOnce(src);
+      if (window.THREE) return true;
+    } catch (_) {
+      // try next CDN candidate
+    }
+  }
+  return false;
+}
 
 function setMoonAgeTarget(age, immediate) {
   moonTargetAge = clamp(age, 0, SYNODIC_CYCLE);
@@ -212,25 +241,43 @@ function initMoon3D() {
     setStatus('3D engine failed to load', 'error');
     return;
   }
+  const probe = moonCanvas.getContext('webgl2') || moonCanvas.getContext('webgl');
+  if (!probe) {
+    setStatus('WebGL not available in this browser', 'error');
+    return;
+  }
   const size = moonCanvas.clientWidth || moonCanvas.width;
-  moonRenderer = new THREE.WebGLRenderer({ canvas: moonCanvas, alpha: true, antialias: true });
+  try {
+    moonRenderer = new THREE.WebGLRenderer({ canvas: moonCanvas, alpha: true, antialias: true });
+  } catch (_) {
+    setStatus('WebGL renderer init failed', 'error');
+    return;
+  }
   moonRenderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
   moonRenderer.setSize(size, size, false);
+  moonRenderer.outputColorSpace = THREE.SRGBColorSpace;
 
   moonScene = new THREE.Scene();
   moonCamera = new THREE.PerspectiveCamera(28, 1, 0.1, 100);
   moonCamera.position.set(0, 0, 5.3);
 
-  const ambient = new THREE.AmbientLight(0x1d2432, 0.22);
+  const ambient = new THREE.AmbientLight(0x1d2432, 0.34);
   moonScene.add(ambient);
 
   moonLight = new THREE.DirectionalLight(0xeaf0ff, 1.45);
   moonLight.position.set(4, 0.2, -4);
   moonScene.add(moonLight);
 
+  // Earthshine/fill light so new moon is still faintly visible.
+  moonFillLight = new THREE.DirectionalLight(0x9fb2d9, 0.22);
+  moonFillLight.position.set(0.2, -0.1, 5.6);
+  moonScene.add(moonFillLight);
+
   const geometry = new THREE.SphereGeometry(1.72, 160, 160);
   const material = new THREE.MeshStandardMaterial({
     color: 0xd7dbe4,
+    emissive: 0x161c28,
+    emissiveIntensity: 0.18,
     roughness: 0.95,
     metalness: 0.0
   });
@@ -278,13 +325,26 @@ function animateMoon(ts) {
     const phase = (moonSmoothAge / SYNODIC_CYCLE) * Math.PI * 2;
     moonMesh.rotation.y += (0.0014 + Math.abs(moonVelocity) * 0.008) * (dt / 16.67);
     moonLight.position.set(Math.sin(phase) * 4.8, 0.22, -Math.cos(phase) * 4.8);
+    if (moonFillLight) moonFillLight.position.set(0.2, -0.1, 5.6);
     moonRenderer.render(moonScene, moonCamera);
   }
   requestAnimationFrame(animateMoon);
 }
 
-initMoon3D();
-requestAnimationFrame(animateMoon);
+async function bootstrapMoon3D() {
+  setStatus('loading 3D engine...', '');
+  const loaded = await ensureThreeLoaded();
+  if (!loaded) {
+    setStatus('three.js blocked, check network/CSP', 'error');
+    return;
+  }
+  initMoon3D();
+  if (!moonRenderer) return;
+  setStatus('3D moon online', 'ok');
+  requestAnimationFrame(animateMoon);
+}
+
+bootstrapMoon3D();
 
 function clamp(v, min, max) {
   return Math.min(max, Math.max(min, v));
@@ -617,5 +677,6 @@ if (navigator.geolocation) {
 </script>
 </body>
 </html>
+
 
 
