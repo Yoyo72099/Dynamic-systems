@@ -242,72 +242,72 @@ function setMoonAgeTarget(age, immediate) {
   }
 }
 
-function drawMoonModel(age) {
+function drawMoonModel(age, ts) {
   const w = moonCanvas.width;
   const h = moonCanvas.height;
   const cx = w / 2;
   const cy = h / 2;
   const radius = 96;
-  const phaseRatio = age / SYNODIC_CYCLE;
-  const phaseAngle = phaseRatio * Math.PI * 2;
-  const illum = 0.5 * (1 - Math.cos(phaseAngle));
-  const waxing = phaseRatio < 0.5;
-  const terminatorScale = Math.abs(1 - 2 * illum);
-
+  const phaseAngle = (age / SYNODIC_CYCLE) * Math.PI * 2;
+  const t = ts * 0.001;
   moonCtx.clearRect(0, 0, w, h);
-  moonCtx.save();
-  moonCtx.beginPath();
-  moonCtx.arc(cx, cy, radius, 0, Math.PI * 2);
-  moonCtx.clip();
+
+  const lightX = Math.sin(phaseAngle);
+  const lightY = -0.08;
+  const lightZ = -Math.cos(phaseAngle);
+  const texSize = moonTextureCanvas.width;
+  const rotation = moonTextureOffset / (radius * 2);
+  const samples = 156;
+  const step = (radius * 2) / samples;
+  const sweep = ((Math.sin(t * 1.5) * 0.5) + 0.5) * (radius * 2);
+
   moonCtx.fillStyle = '#060a11';
-  moonCtx.fillRect(0, 0, w, h);
-
-  moonCtx.save();
-  moonCtx.translate(cx - radius + moonTextureOffset, cy - radius);
-  moonCtx.drawImage(moonTextureCanvas, 0, 0, radius * 2, radius * 2);
-  moonCtx.drawImage(moonTextureCanvas, -radius * 2, 0, radius * 2, radius * 2);
-  moonCtx.drawImage(moonTextureCanvas, radius * 2, 0, radius * 2, radius * 2);
-  moonCtx.restore();
-
-  const litGrad = moonCtx.createRadialGradient(cx - radius * 0.22, cy - radius * 0.28, radius * 0.08, cx, cy, radius * 1.04);
-  litGrad.addColorStop(0, 'rgba(255,255,255,0.86)');
-  litGrad.addColorStop(0.65, 'rgba(210,220,232,0.72)');
-  litGrad.addColorStop(1, 'rgba(120,130,146,0.52)');
-  moonCtx.fillStyle = litGrad;
-  moonCtx.fillRect(cx - radius, cy - radius, radius * 2, radius * 2);
-
-  moonCtx.globalCompositeOperation = 'multiply';
-  moonCtx.fillStyle = 'rgba(7,10,16,0.88)';
-  moonCtx.fillRect(cx - radius, cy - radius, radius * 2, radius * 2);
-  moonCtx.globalCompositeOperation = 'source-over';
-
-  moonCtx.save();
   moonCtx.beginPath();
   moonCtx.arc(cx, cy, radius, 0, Math.PI * 2);
-  moonCtx.clip();
-  moonCtx.fillStyle = 'rgba(255,255,255,0.78)';
-  moonCtx.beginPath();
-  moonCtx.arc(cx + (waxing ? radius : -radius), cy, radius, -Math.PI / 2, Math.PI / 2, !waxing);
-  moonCtx.ellipse(cx, cy, radius * terminatorScale, radius, 0, -Math.PI / 2, Math.PI / 2, waxing);
-  moonCtx.closePath();
   moonCtx.fill();
 
-  moonCtx.globalCompositeOperation = 'multiply';
-  moonCtx.fillStyle = 'rgba(12,16,25,0.42)';
-  moonCtx.beginPath();
-  moonCtx.arc(cx + (waxing ? -radius : radius), cy, radius, -Math.PI / 2, Math.PI / 2, waxing);
-  moonCtx.ellipse(cx, cy, radius * terminatorScale, radius, 0, -Math.PI / 2, Math.PI / 2, !waxing);
-  moonCtx.closePath();
-  moonCtx.fill();
-  moonCtx.restore();
+  for (let j = 0; j < samples; j++) {
+    for (let i = 0; i < samples; i++) {
+      const px = cx - radius + i * step;
+      const py = cy - radius + j * step;
+      const nx = (px - cx) / radius;
+      const ny = (py - cy) / radius;
+      const rr = nx * nx + ny * ny;
+      if (rr > 1) continue;
+      const nz = Math.sqrt(1 - rr);
+      const mask = ((px - (cx - radius)) / (radius * 2));
+      const grainGate = seededNoise(i * 0.37 + t * 2.2, j * 0.37 + t * 1.8);
+      const reveal = mask * (radius * 2);
+      if (reveal > sweep + (grainGate - 0.5) * 8) continue;
 
-  const vignette = moonCtx.createRadialGradient(cx - radius * 0.25, cy - radius * 0.2, radius * 0.18, cx, cy, radius);
-  vignette.addColorStop(0, 'rgba(255,255,255,0.18)');
-  vignette.addColorStop(0.7, 'rgba(255,255,255,0.02)');
-  vignette.addColorStop(1, 'rgba(0,0,0,0.40)');
-  moonCtx.fillStyle = vignette;
-  moonCtx.fillRect(cx - radius, cy - radius, radius * 2, radius * 2);
-  moonCtx.restore();
+      const lon = Math.atan2(nx, nz) / (2 * Math.PI) + 0.5 + rotation;
+      const lat = Math.asin(ny) / Math.PI + 0.5;
+      const tx = ((lon % 1 + 1) % 1) * (texSize - 1);
+      const ty = clamp(lat, 0, 1) * (texSize - 1);
+      const tix = Math.floor(tx);
+      const tiy = Math.floor(ty);
+      const idx = (tiy * texSize + tix) * 4;
+      const base = moonTexture.data[idx] / 255;
+
+      const diffuse = Math.max(0, nx * lightX + ny * lightY + nz * lightZ);
+      const rim = Math.pow(Math.max(0, nz), 0.5);
+      const lum = 0.03 + diffuse * 0.95;
+      const micro = 0.92 + (seededNoise(tx * 0.13 + t * 0.8, ty * 0.13 - t * 0.6) - 0.5) * 0.12;
+      const tone = clamp((0.35 + base * 0.75) * lum * (0.7 + rim * 0.3) * micro, 0, 1);
+      const c = Math.round(220 * tone + 16);
+      moonCtx.fillStyle = `rgba(${c},${c},${Math.min(255, c + 8)},1)`;
+      moonCtx.fillRect(px, py, step + 0.45, step + 0.45);
+    }
+  }
+
+  const glow = moonCtx.createRadialGradient(cx, cy, radius * 0.35, cx, cy, radius * 1.15);
+  glow.addColorStop(0, 'rgba(255,255,255,0)');
+  glow.addColorStop(0.8, 'rgba(255,255,255,0.05)');
+  glow.addColorStop(1, 'rgba(255,255,255,0)');
+  moonCtx.fillStyle = glow;
+  moonCtx.beginPath();
+  moonCtx.arc(cx, cy, radius * 1.18, 0, Math.PI * 2);
+  moonCtx.fill();
 
   moonCtx.beginPath();
   moonCtx.arc(cx, cy, radius, 0, Math.PI * 2);
@@ -332,7 +332,7 @@ function animateMoon(ts) {
   moonTargetAge = clamp(moonTargetAge, 0, SYNODIC_CYCLE);
   moonSmoothAge += (moonTargetAge - moonSmoothAge) * (1 - Math.pow(0.86, dt / 16.67));
   moonTextureOffset = (moonTextureOffset + moonVelocity * 0.18) % (96 * 2);
-  drawMoonModel(moonSmoothAge);
+  drawMoonModel(moonSmoothAge, ts);
   requestAnimationFrame(animateMoon);
 }
 
@@ -670,4 +670,5 @@ if (navigator.geolocation) {
 </script>
 </body>
 </html>
+
 
