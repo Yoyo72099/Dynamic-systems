@@ -43,8 +43,8 @@
     }
 
     .moon-img-container {
-      width: 200px;
-      height: 200px;
+      width: 250px;
+      height: 250px;
       border-radius: 50%;
       overflow: hidden;
       position: relative;
@@ -128,7 +128,7 @@
     <div class="moon-wrap">
       <canvas id="orbitCanvas" width="340" height="340"></canvas>
       <div class="moon-img-container">
-        <canvas id="moonModel" width="200" height="200" aria-label="Moon model"></canvas>
+        <canvas id="moonModel" width="250" height="250" aria-label="Moon model"></canvas>
       </div>
     </div>
     <div class="moon-label">
@@ -180,6 +180,7 @@
   </div>
 </div>
 
+<script src="https://unpkg.com/three@0.161.0/build/three.min.js"></script>
 <script>
 const SYNODIC_CYCLE = 29.53058867;
 let currentMode = 'live';
@@ -191,48 +192,12 @@ let moonTargetAge = 14.7;
 let moonSmoothAge = 14.7;
 let moonVelocity = 0;
 let moonLastFrameTs = performance.now();
-let moonTextureOffset = 0;
-
 const moonCanvas = document.getElementById('moonModel');
-const moonCtx = moonCanvas.getContext('2d');
-const moonTextureCanvas = document.createElement('canvas');
-moonTextureCanvas.width = 160;
-moonTextureCanvas.height = 160;
-const moonTextureCtx = moonTextureCanvas.getContext('2d');
-const moonTexture = moonTextureCtx.createImageData(moonTextureCanvas.width, moonTextureCanvas.height);
-
-function seededNoise(x, y) {
-  const n = Math.sin(x * 12.9898 + y * 78.233 + 37.719) * 43758.5453;
-  return n - Math.floor(n);
-}
-
-function buildMoonTexture() {
-  const size = moonTextureCanvas.width;
-  const c = size / 2;
-  const r = c - 2;
-  for (let y = 0; y < size; y++) {
-    for (let x = 0; x < size; x++) {
-      const dx = x - c;
-      const dy = y - c;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      const idx = (y * size + x) * 4;
-      if (dist > r) {
-        moonTexture.data[idx + 3] = 0;
-        continue;
-      }
-      const n1 = seededNoise(x * 0.12, y * 0.12);
-      const n2 = seededNoise(x * 0.32 + 10, y * 0.32 + 20);
-      const crater = Math.max(0, 1 - Math.abs(Math.sin((x + y) * 0.09 + n2 * 4.0)));
-      const relief = 0.55 + n1 * 0.25 - crater * 0.12;
-      const val = Math.round(140 + relief * 70);
-      moonTexture.data[idx] = val;
-      moonTexture.data[idx + 1] = val;
-      moonTexture.data[idx + 2] = Math.min(255, val + 8);
-      moonTexture.data[idx + 3] = 255;
-    }
-  }
-  moonTextureCtx.putImageData(moonTexture, 0, 0);
-}
+let moonRenderer = null;
+let moonScene = null;
+let moonCamera = null;
+let moonMesh = null;
+let moonLight = null;
 
 function setMoonAgeTarget(age, immediate) {
   moonTargetAge = clamp(age, 0, SYNODIC_CYCLE);
@@ -242,78 +207,56 @@ function setMoonAgeTarget(age, immediate) {
   }
 }
 
-function drawMoonModel(age, ts) {
-  const w = moonCanvas.width;
-  const h = moonCanvas.height;
-  const cx = w / 2;
-  const cy = h / 2;
-  const radius = 96;
-  const phaseAngle = (age / SYNODIC_CYCLE) * Math.PI * 2;
-  const t = ts * 0.001;
-  moonCtx.clearRect(0, 0, w, h);
-
-  const lightX = Math.sin(phaseAngle);
-  const lightY = -0.08;
-  const lightZ = -Math.cos(phaseAngle);
-  const texSize = moonTextureCanvas.width;
-  const rotation = moonTextureOffset / (radius * 2);
-  const samples = 156;
-  const step = (radius * 2) / samples;
-  const sweep = ((Math.sin(t * 1.5) * 0.5) + 0.5) * (radius * 2);
-
-  moonCtx.fillStyle = '#060a11';
-  moonCtx.beginPath();
-  moonCtx.arc(cx, cy, radius, 0, Math.PI * 2);
-  moonCtx.fill();
-
-  for (let j = 0; j < samples; j++) {
-    for (let i = 0; i < samples; i++) {
-      const px = cx - radius + i * step;
-      const py = cy - radius + j * step;
-      const nx = (px - cx) / radius;
-      const ny = (py - cy) / radius;
-      const rr = nx * nx + ny * ny;
-      if (rr > 1) continue;
-      const nz = Math.sqrt(1 - rr);
-      const mask = ((px - (cx - radius)) / (radius * 2));
-      const grainGate = seededNoise(i * 0.37 + t * 2.2, j * 0.37 + t * 1.8);
-      const reveal = mask * (radius * 2);
-      if (reveal > sweep + (grainGate - 0.5) * 8) continue;
-
-      const lon = Math.atan2(nx, nz) / (2 * Math.PI) + 0.5 + rotation;
-      const lat = Math.asin(ny) / Math.PI + 0.5;
-      const tx = ((lon % 1 + 1) % 1) * (texSize - 1);
-      const ty = clamp(lat, 0, 1) * (texSize - 1);
-      const tix = Math.floor(tx);
-      const tiy = Math.floor(ty);
-      const idx = (tiy * texSize + tix) * 4;
-      const base = moonTexture.data[idx] / 255;
-
-      const diffuse = Math.max(0, nx * lightX + ny * lightY + nz * lightZ);
-      const rim = Math.pow(Math.max(0, nz), 0.5);
-      const lum = 0.03 + diffuse * 0.95;
-      const micro = 0.92 + (seededNoise(tx * 0.13 + t * 0.8, ty * 0.13 - t * 0.6) - 0.5) * 0.12;
-      const tone = clamp((0.35 + base * 0.75) * lum * (0.7 + rim * 0.3) * micro, 0, 1);
-      const c = Math.round(220 * tone + 16);
-      moonCtx.fillStyle = `rgba(${c},${c},${Math.min(255, c + 8)},1)`;
-      moonCtx.fillRect(px, py, step + 0.45, step + 0.45);
-    }
+function initMoon3D() {
+  if (!window.THREE) {
+    setStatus('3D engine failed to load', 'error');
+    return;
   }
+  const size = moonCanvas.clientWidth || moonCanvas.width;
+  moonRenderer = new THREE.WebGLRenderer({ canvas: moonCanvas, alpha: true, antialias: true });
+  moonRenderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  moonRenderer.setSize(size, size, false);
 
-  const glow = moonCtx.createRadialGradient(cx, cy, radius * 0.35, cx, cy, radius * 1.15);
-  glow.addColorStop(0, 'rgba(255,255,255,0)');
-  glow.addColorStop(0.8, 'rgba(255,255,255,0.05)');
-  glow.addColorStop(1, 'rgba(255,255,255,0)');
-  moonCtx.fillStyle = glow;
-  moonCtx.beginPath();
-  moonCtx.arc(cx, cy, radius * 1.18, 0, Math.PI * 2);
-  moonCtx.fill();
+  moonScene = new THREE.Scene();
+  moonCamera = new THREE.PerspectiveCamera(28, 1, 0.1, 100);
+  moonCamera.position.set(0, 0, 5.3);
 
-  moonCtx.beginPath();
-  moonCtx.arc(cx, cy, radius, 0, Math.PI * 2);
-  moonCtx.strokeStyle = 'rgba(255,255,255,0.15)';
-  moonCtx.lineWidth = 1;
-  moonCtx.stroke();
+  const ambient = new THREE.AmbientLight(0x1d2432, 0.22);
+  moonScene.add(ambient);
+
+  moonLight = new THREE.DirectionalLight(0xeaf0ff, 1.45);
+  moonLight.position.set(4, 0.2, -4);
+  moonScene.add(moonLight);
+
+  const geometry = new THREE.SphereGeometry(1.72, 160, 160);
+  const material = new THREE.MeshStandardMaterial({
+    color: 0xd7dbe4,
+    roughness: 0.95,
+    metalness: 0.0
+  });
+  moonMesh = new THREE.Mesh(geometry, material);
+  moonScene.add(moonMesh);
+
+  const loader = new THREE.TextureLoader();
+  loader.load(
+    'https://threejs.org/examples/textures/planets/moon_1024.jpg',
+    texture => {
+      texture.wrapS = THREE.RepeatWrapping;
+      texture.wrapT = THREE.ClampToEdgeWrapping;
+      material.map = texture;
+      material.bumpMap = texture;
+      material.bumpScale = 0.045;
+      material.needsUpdate = true;
+    }
+  );
+
+  window.addEventListener('resize', () => {
+    if (!moonRenderer || !moonCamera) return;
+    const next = moonCanvas.clientWidth || moonCanvas.width;
+    moonRenderer.setSize(next, next, false);
+    moonCamera.aspect = 1;
+    moonCamera.updateProjectionMatrix();
+  });
 }
 
 function animateMoon(ts) {
@@ -331,12 +274,16 @@ function animateMoon(ts) {
   }
   moonTargetAge = clamp(moonTargetAge, 0, SYNODIC_CYCLE);
   moonSmoothAge += (moonTargetAge - moonSmoothAge) * (1 - Math.pow(0.86, dt / 16.67));
-  moonTextureOffset = (moonTextureOffset + moonVelocity * 0.18) % (96 * 2);
-  drawMoonModel(moonSmoothAge, ts);
+  if (moonMesh && moonLight && moonRenderer && moonScene && moonCamera) {
+    const phase = (moonSmoothAge / SYNODIC_CYCLE) * Math.PI * 2;
+    moonMesh.rotation.y += (0.0014 + Math.abs(moonVelocity) * 0.008) * (dt / 16.67);
+    moonLight.position.set(Math.sin(phase) * 4.8, 0.22, -Math.cos(phase) * 4.8);
+    moonRenderer.render(moonScene, moonCamera);
+  }
   requestAnimationFrame(animateMoon);
 }
 
-buildMoonTexture();
+initMoon3D();
 requestAnimationFrame(animateMoon);
 
 function clamp(v, min, max) {
