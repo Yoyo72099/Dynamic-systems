@@ -69,6 +69,7 @@
     .phase-slider-row { width: 100%; display: flex; align-items: center; gap: 10px; }
     #phaseSlider { width: 100%; accent-color: #4ade80; }
     .phase-slider-value { font-size: 9px; letter-spacing: 1px; color: rgba(255,255,255,0.5); min-width: 52px; text-align: right; }
+    .phase-delta { font-size: 9px; letter-spacing: 1px; color: rgba(255,255,255,0.58); min-height: 14px; }
     .mode-row { display: flex; gap: 8px; }
     .mode-btn { padding: 6px 10px; font-size: 8px; letter-spacing: 2px; }
 
@@ -139,6 +140,7 @@
           <input id="phaseSlider" type="range" min="0" max="29.53" step="0.1" value="0" />
           <div class="phase-slider-value" id="phaseSliderValue">0.0d</div>
         </div>
+        <div class="phase-delta" id="phaseDelta">drag to preview day distance</div>
         <div class="mode-row">
           <button class="mode-btn" id="manualBtn" type="button">Manual Phase</button>
           <button class="mode-btn" id="liveBtn" type="button">Resume Live</button>
@@ -189,6 +191,7 @@ let moonTargetAge = 14.7;
 let moonSmoothAge = 14.7;
 let moonVelocity = 0;
 let moonLastFrameTs = performance.now();
+let moonTextureOffset = 0;
 
 const moonCanvas = document.getElementById('moonModel');
 const moonCtx = moonCanvas.getContext('2d');
@@ -245,43 +248,63 @@ function drawMoonModel(age) {
   const cx = w / 2;
   const cy = h / 2;
   const radius = 96;
+  const phaseRatio = age / SYNODIC_CYCLE;
+  const phaseAngle = phaseRatio * Math.PI * 2;
+  const illum = 0.5 * (1 - Math.cos(phaseAngle));
+  const waxing = phaseRatio < 0.5;
+  const terminatorScale = Math.abs(1 - 2 * illum);
+
   moonCtx.clearRect(0, 0, w, h);
   moonCtx.save();
   moonCtx.beginPath();
   moonCtx.arc(cx, cy, radius, 0, Math.PI * 2);
   moonCtx.clip();
-  moonCtx.fillStyle = '#070b12';
+  moonCtx.fillStyle = '#060a11';
   moonCtx.fillRect(0, 0, w, h);
-  moonCtx.drawImage(moonTextureCanvas, cx - radius, cy - radius, radius * 2, radius * 2);
 
-  const phase = (age / SYNODIC_CYCLE) * Math.PI * 2;
-  const lx = Math.sin(phase);
-  const ly = -0.12;
-  const lz = -Math.cos(phase);
+  moonCtx.save();
+  moonCtx.translate(cx - radius + moonTextureOffset, cy - radius);
+  moonCtx.drawImage(moonTextureCanvas, 0, 0, radius * 2, radius * 2);
+  moonCtx.drawImage(moonTextureCanvas, -radius * 2, 0, radius * 2, radius * 2);
+  moonCtx.drawImage(moonTextureCanvas, radius * 2, 0, radius * 2, radius * 2);
+  moonCtx.restore();
 
-  const samples = 110;
-  const step = (radius * 2) / samples;
-  for (let j = 0; j < samples; j++) {
-    for (let i = 0; i < samples; i++) {
-      const px = cx - radius + i * step;
-      const py = cy - radius + j * step;
-      const nx = (px - cx) / radius;
-      const ny = (py - cy) / radius;
-      const d2 = nx * nx + ny * ny;
-      if (d2 > 1) continue;
-      const nz = Math.sqrt(1 - d2);
-      const diffuse = Math.max(0, nx * lx + ny * ly + nz * lz);
-      const ambient = 0.04;
-      const lum = ambient + diffuse * 0.95;
-      moonCtx.fillStyle = `rgba(255,255,255,${Math.min(1, lum) * 0.66})`;
-      moonCtx.fillRect(px, py, step + 0.3, step + 0.3);
-    }
-  }
+  const litGrad = moonCtx.createRadialGradient(cx - radius * 0.22, cy - radius * 0.28, radius * 0.08, cx, cy, radius * 1.04);
+  litGrad.addColorStop(0, 'rgba(255,255,255,0.86)');
+  litGrad.addColorStop(0.65, 'rgba(210,220,232,0.72)');
+  litGrad.addColorStop(1, 'rgba(120,130,146,0.52)');
+  moonCtx.fillStyle = litGrad;
+  moonCtx.fillRect(cx - radius, cy - radius, radius * 2, radius * 2);
 
-  const vignette = moonCtx.createRadialGradient(cx - radius * 0.25, cy - radius * 0.2, radius * 0.2, cx, cy, radius);
-  vignette.addColorStop(0, 'rgba(255,255,255,0.17)');
-  vignette.addColorStop(0.6, 'rgba(255,255,255,0)');
-  vignette.addColorStop(1, 'rgba(0,0,0,0.30)');
+  moonCtx.globalCompositeOperation = 'multiply';
+  moonCtx.fillStyle = 'rgba(7,10,16,0.88)';
+  moonCtx.fillRect(cx - radius, cy - radius, radius * 2, radius * 2);
+  moonCtx.globalCompositeOperation = 'source-over';
+
+  moonCtx.save();
+  moonCtx.beginPath();
+  moonCtx.arc(cx, cy, radius, 0, Math.PI * 2);
+  moonCtx.clip();
+  moonCtx.fillStyle = 'rgba(255,255,255,0.78)';
+  moonCtx.beginPath();
+  moonCtx.arc(cx + (waxing ? radius : -radius), cy, radius, -Math.PI / 2, Math.PI / 2, !waxing);
+  moonCtx.ellipse(cx, cy, radius * terminatorScale, radius, 0, -Math.PI / 2, Math.PI / 2, waxing);
+  moonCtx.closePath();
+  moonCtx.fill();
+
+  moonCtx.globalCompositeOperation = 'multiply';
+  moonCtx.fillStyle = 'rgba(12,16,25,0.42)';
+  moonCtx.beginPath();
+  moonCtx.arc(cx + (waxing ? -radius : radius), cy, radius, -Math.PI / 2, Math.PI / 2, waxing);
+  moonCtx.ellipse(cx, cy, radius * terminatorScale, radius, 0, -Math.PI / 2, Math.PI / 2, !waxing);
+  moonCtx.closePath();
+  moonCtx.fill();
+  moonCtx.restore();
+
+  const vignette = moonCtx.createRadialGradient(cx - radius * 0.25, cy - radius * 0.2, radius * 0.18, cx, cy, radius);
+  vignette.addColorStop(0, 'rgba(255,255,255,0.18)');
+  vignette.addColorStop(0.7, 'rgba(255,255,255,0.02)');
+  vignette.addColorStop(1, 'rgba(0,0,0,0.40)');
   moonCtx.fillStyle = vignette;
   moonCtx.fillRect(cx - radius, cy - radius, radius * 2, radius * 2);
   moonCtx.restore();
@@ -308,6 +331,7 @@ function animateMoon(ts) {
   }
   moonTargetAge = clamp(moonTargetAge, 0, SYNODIC_CYCLE);
   moonSmoothAge += (moonTargetAge - moonSmoothAge) * (1 - Math.pow(0.86, dt / 16.67));
+  moonTextureOffset = (moonTextureOffset + moonVelocity * 0.18) % (96 * 2);
   drawMoonModel(moonSmoothAge);
   requestAnimationFrame(animateMoon);
 }
@@ -417,8 +441,8 @@ drawOrbits();
 async function fetchNavyData(lat, lon) {
   const now = new Date();
   const date = now.toISOString().split('T')[0];
-  const tz = -(now.getTimezoneOffset() / 60);
-  const url = `https://aa.usno.navy.mil/api/rstt/oneday?date=${date}&coords=${lat.toFixed(2)},${lon.toFixed(2)}&tz=${tz}&dst=true`;
+  const tz = Math.round(lon / 15);
+  const url = `https://aa.usno.navy.mil/api/rstt/oneday?date=${date}&coords=${lat.toFixed(2)},${lon.toFixed(2)}&tz=${tz}&dst=false`;
   const res = await fetch(url);
   return await res.json();
 }
@@ -434,6 +458,15 @@ function updateMoonCycleDerivedValues(ageRaw) {
   document.getElementById('nextFull').textContent = age === null ? '—' : (age < 14.77 ? 14.77 - age : SYNODIC_CYCLE - age + 14.77).toFixed(1);
   document.getElementById('nextNew').textContent = age === null ? '—' : (SYNODIC_CYCLE - age).toFixed(1);
   document.getElementById('cycleProgress').textContent = age === null ? '—' : Math.round((age / SYNODIC_CYCLE) * 100) + '%';
+}
+
+function deriveAgeFromPhase(phaseName, illuminationPercent) {
+  const illum = clamp((Number(illuminationPercent) || 0) / 100, 0, 1);
+  const baseAngle = Math.acos(clamp(1 - 2 * illum, -1, 1));
+  const lower = (phaseName || '').toLowerCase();
+  const waxing = lower.includes('wax') || lower.includes('first');
+  const phaseAngle = waxing ? baseAngle : (Math.PI * 2 - baseAngle);
+  return (phaseAngle / (Math.PI * 2)) * SYNODIC_CYCLE;
 }
 
 function applyMoonDataToUI(data) {
@@ -453,6 +486,7 @@ function applyMoonDataToUI(data) {
     setMoonAgeTarget(data.moonAge, true);
     document.getElementById('phaseSlider').value = data.moonAge.toFixed(1);
     document.getElementById('phaseSliderValue').textContent = `${data.moonAge.toFixed(1)}d`;
+    document.getElementById('phaseDelta').textContent = '0.0 days from current local phase';
   }
 }
 
@@ -470,6 +504,13 @@ function applyManualPhase(age, silent) {
   updateMoonCycleDerivedValues(safeAge);
   document.getElementById('phaseSlider').value = safeAge.toFixed(1);
   document.getElementById('phaseSliderValue').textContent = `${safeAge.toFixed(1)}d`;
+  if (source.moonAge !== null && Number.isFinite(source.moonAge)) {
+    const delta = (safeAge - source.moonAge + SYNODIC_CYCLE) % SYNODIC_CYCLE;
+    const deltaText = delta < 0.05 ? 'today' : `${delta.toFixed(1)} days`;
+    document.getElementById('phaseDelta').textContent = `${deltaText} from current local phase`;
+  } else {
+    document.getElementById('phaseDelta').textContent = 'phase distance unavailable';
+  }
   if (!silent) setStatus('manual phase preview', '');
 }
 
@@ -505,6 +546,12 @@ async function getMoonData(lat, lon, city) {
     } catch {
       setStatus('API error', 'error');
     }
+  }
+  if (!Number.isFinite(moonAge)) {
+    moonAge = deriveAgeFromPhase(phaseName, illumination);
+  }
+  if (!phaseName || phaseName === '—') {
+    phaseName = getPhaseNameFromAge(moonAge || 0);
   }
   return { lat, lon, city, phaseName, illumination, moonriseTime, moonsetTime, moonAge };
 }
@@ -623,3 +670,4 @@ if (navigator.geolocation) {
 </script>
 </body>
 </html>
+
