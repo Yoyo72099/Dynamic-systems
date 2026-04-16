@@ -4,20 +4,20 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>LUNAR</title>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Cinzel:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Cormorant+Garamond:wght@500;600&display=swap" rel="stylesheet">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       background: #000000;
       color: #f5f5f5;
-      font-family: 'Space Mono', monospace;
+      font-family: 'Inter', sans-serif;
       min-height: 100vh;
       overflow-x: hidden;
     }
     #starfield { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
     .main { position: relative; z-index: 1; display: grid; grid-template-columns: 220px 1fr 220px; min-height: 100vh; padding: 30px; gap: 20px; }
     .topbar { grid-column: 1/-1; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.18); padding-bottom: 16px; }
-    .topbar-title { font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: 6px; color: rgba(212, 168, 75, 0.75); }
+    .topbar-title { font-family: 'Cormorant Garamond', serif; font-size: 14px; letter-spacing: 4px; color: rgba(226, 200, 148, 0.82); }
     .topbar-status { font-size: 9px; letter-spacing: 3px; color: #7ee787; }
     .topbar-date { font-size: 9px; letter-spacing: 2px; color: rgba(180, 190, 200, 0.5); }
     .panel-left, .panel-right { display: flex; flex-direction: column; gap: 20px; padding-top: 20px; }
@@ -43,9 +43,33 @@
       position: relative;
       width: 340px;
       height: 340px;
+      overflow: hidden;
       display: flex;
       align-items: center;
       justify-content: center;
+    }
+    .celestial-track {
+      width: 700px;
+      height: 340px;
+      display: flex;
+      transform: translateX(0);
+      transition: transform 0.45s cubic-bezier(0.23, 1, 0.32, 1);
+    }
+    .celestial-pane {
+      width: 340px;
+      height: 340px;
+      position: relative;
+      flex: 0 0 340px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .swipe-hint {
+      margin-top: 10px;
+      font-size: 9px;
+      letter-spacing: 2px;
+      color: rgba(226, 200, 148, 0.7);
+      text-transform: uppercase;
     }
 
     #orbitCanvas {
@@ -76,7 +100,7 @@
     }
 
     .moon-label { margin-top: 24px; text-align: center; }
-    .moon-phase-name { font-family: 'Cinzel', serif; font-size: 18px; letter-spacing: 4px; color: #fff; margin-bottom: 6px; }
+    .moon-phase-name { font-family: 'Cormorant Garamond', serif; font-size: 24px; letter-spacing: 3px; color: #fff; margin-bottom: 6px; }
     .moon-location { font-size: 9px; letter-spacing: 3px; color: rgba(255,255,255,0.3); }
     .phase-controls { margin-top: 14px; width: 260px; display: flex; flex-direction: column; gap: 8px; align-items: center; }
     .phase-slider-label { font-size: 8px; letter-spacing: 2px; color: rgba(255,255,255,0.35); text-transform: uppercase; }
@@ -89,14 +113,35 @@
 
     .bottombar { grid-column: 1/-1; border-top: 1px solid rgba(255,255,255,0.18); padding-top: 20px; display: flex; align-items: center; gap: 16px; }
     .search-label { font-size: 9px; letter-spacing: 3px; color: rgba(255,255,255,0.2); white-space: nowrap; }
-    input { background: transparent; border: none; border-bottom: 1px solid rgba(255,255,255,0.15); color: #fff; font-family: 'Space Mono', monospace; font-size: 13px; padding: 8px 4px; width: 220px; outline: none; letter-spacing: 2px; }
+    input { background: transparent; border: none; border-bottom: 1px solid rgba(255,255,255,0.15); color: #fff; font-family: 'Inter', sans-serif; font-size: 13px; padding: 8px 4px; width: 220px; outline: none; letter-spacing: 1px; }
     input::placeholder { color: rgba(255,255,255,0.15); }
     input:focus { border-bottom-color: rgba(255,255,255,0.4); }
-    button { background: transparent; border: 1px solid rgba(255,255,255,0.15); color: rgba(255,255,255,0.4); font-family: 'Space Mono', monospace; font-size: 9px; letter-spacing: 3px; padding: 8px 20px; cursor: pointer; text-transform: uppercase; transition: all 0.3s; }
+    button { background: transparent; border: 1px solid rgba(255,255,255,0.15); color: rgba(255,255,255,0.4); font-family: 'Inter', sans-serif; font-size: 10px; letter-spacing: 2px; padding: 8px 20px; cursor: pointer; text-transform: uppercase; transition: all 0.3s; }
     button:hover { border-color: rgba(255,255,255,0.4); color: #fff; }
     .status-bar { font-size: 9px; letter-spacing: 2px; color: rgba(255,255,255,0.2); margin-left: auto; }
     .status-bar.error { color: #f87171; }
     .status-bar.ok { color: #7ee787; }
+    .about {
+      grid-column: 1 / -1;
+      margin-top: 8px;
+      border-top: 1px solid rgba(226, 200, 148, 0.25);
+      padding-top: 18px;
+      display: grid;
+      grid-template-columns: 160px 1fr;
+      gap: 16px;
+      color: rgba(220, 225, 232, 0.76);
+    }
+    .about-title {
+      font-family: 'Cormorant Garamond', serif;
+      letter-spacing: 2px;
+      font-size: 18px;
+      color: rgba(230, 208, 158, 0.95);
+    }
+    .about-text {
+      font-size: 12px;
+      line-height: 1.6;
+      max-width: 880px;
+    }
 
     @media (max-width: 768px) {
       .main { grid-template-columns: 1fr; padding: 16px; }
@@ -140,24 +185,32 @@
 
   <div class="center">
     <div class="moon-wrap">
-      <canvas id="orbitCanvas" width="340" height="340"></canvas>
-      <div class="moon-img-container">
-        <canvas id="moonModel" width="250" height="250" aria-label="Moon model"></canvas>
+      <div class="celestial-track" id="celestialTrack">
+        <div class="celestial-pane">
+          <canvas id="orbitCanvas" width="340" height="340"></canvas>
+          <div class="moon-img-container">
+            <canvas id="moonModel" width="250" height="250" aria-label="Moon model"></canvas>
+          </div>
+        </div>
+        <div class="celestial-pane">
+          <canvas id="trajectoryCanvas" width="340" height="340"></canvas>
+        </div>
       </div>
     </div>
+    <div class="swipe-hint">Swipe right to reveal Sun-Earth-Moon choreography</div>
     <div class="moon-label">
       <div class="moon-phase-name" id="phaseName">DETECTING</div>
       <div class="moon-location" id="locationName">locating observer</div>
       <div class="phase-controls">
-        <div class="phase-slider-label">Drag moon or slider to scrub phase</div>
+        <div class="phase-slider-label">Drag the pearl to preview lunar phase</div>
         <div class="phase-slider-row">
           <input id="phaseSlider" type="range" min="0" max="29.53" step="0.1" value="0" />
           <div class="phase-slider-value" id="phaseSliderValue">0.0d</div>
         </div>
         <div class="phase-delta" id="phaseDelta">drag to preview day distance</div>
         <div class="mode-row">
-          <button class="mode-btn" id="manualBtn" type="button">Manual Phase</button>
-          <button class="mode-btn" id="liveBtn" type="button">Resume Live</button>
+          <button class="mode-btn" id="manualBtn" type="button">Preview Phase</button>
+          <button class="mode-btn" id="liveBtn" type="button">Return Live</button>
         </div>
       </div>
     </div>
@@ -192,6 +245,15 @@
     <button onclick="searchCity()">Query</button>
     <div class="status-bar" id="status">awaiting input</div>
   </div>
+  <section class="about">
+    <div class="about-title">About</div>
+    <div class="about-text">
+      This poetic observatory visualizes real lunar phase data through jewelry-like celestial objects.
+      The pearl represents the Moon and the black diamond represents the Sun, while their changing geometry
+      with Earth defines the phase you see now. Use search to switch cities, drag to preview phase progression,
+      and swipe right to inspect the orbital relationship behind each phase.
+    </div>
+  </section>
 </div>
 
 <script>
@@ -206,10 +268,16 @@ let moonSmoothAge = 14.7;
 let moonVelocity = 0;
 let moonLastFrameTs = performance.now();
 const moonCanvas = document.getElementById('moonModel');
+const trajectoryCanvas = document.getElementById('trajectoryCanvas');
+const tctx = trajectoryCanvas.getContext('2d');
+const celestialTrack = document.getElementById('celestialTrack');
 let moonGL = null;
 let moonProgram = null;
 let moonUniforms = null;
 let moonRot = 0;
+let panelOffset = 0;
+let panelTargetOffset = 0;
+let panelSwipe = null;
 
 function setMoonAgeTarget(age, immediate) {
   moonTargetAge = clamp(age, 0, SYNODIC_CYCLE);
@@ -262,24 +330,30 @@ function initMoon3D() {
 
         float lon = atan(n.x, n.z) + uRot;
         float lat = asin(n.y);
-        vec2 uv = vec2(lon * 0.35, lat * 0.7);
-        float tex = noise(uv * 8.0) * 0.5 + noise(uv * 20.0) * 0.3 + noise(uv * 45.0) * 0.2;
-        float crater = smoothstep(0.55, 0.98, noise(uv * 28.0 + 17.0));
-        tex = tex * 0.85 + crater * 0.15;
+        vec2 uv = vec2(lon * 0.42, lat * 0.62);
 
-        vec3 base = mix(vec3(0.42, 0.44, 0.48), vec3(0.83, 0.84, 0.86), tex);
-        vec3 lMain = normalize(vec3(sin(uPhase), 0.16, -cos(uPhase)));
-        vec3 lFill = normalize(vec3(0.2, -0.1, 1.0));
+        float grain = noise(uv * 8.0) * 0.55 + noise(uv * 18.0) * 0.3 + noise(uv * 36.0) * 0.15;
+        float nacre = noise(uv * 12.0 + vec2(uTime * 0.02, -uTime * 0.015));
+        vec3 pearlBase = vec3(0.90, 0.90, 0.92);
+        vec3 pearlTint = vec3(0.84, 0.88, 0.95);
+        vec3 base = mix(pearlBase, pearlTint, clamp(grain * 0.55 + nacre * 0.25, 0.0, 1.0));
+
+        vec3 lMain = normalize(vec3(sin(uPhase), 0.13, -cos(uPhase)));
+        vec3 lFill = normalize(vec3(0.22, -0.08, 1.0));
         float dMain = max(0.0, dot(n, lMain));
         float dFill = max(0.0, dot(n, lFill));
+        float earthshine = 0.18 * dFill;
+        float diffuse = dMain * 1.08 + earthshine;
 
-        float earthshine = 0.12 * dFill;
-        float light = dMain * 1.15 + earthshine + 0.03;
-        float rim = pow(max(0.0, z), 0.45);
-        vec3 color = base * light * (0.72 + 0.28 * rim);
+        vec3 viewDir = vec3(0.0, 0.0, 1.0);
+        vec3 halfVec = normalize(lMain + viewDir);
+        float spec = pow(max(dot(n, halfVec), 0.0), 68.0) * 0.75;
+        float specSoft = pow(max(dot(n, halfVec), 0.0), 18.0) * 0.20;
 
-        float fresnel = pow(1.0 - z, 2.8);
-        color += vec3(0.06, 0.07, 0.10) * fresnel;
+        float rim = pow(1.0 - max(dot(n, viewDir), 0.0), 2.4);
+        vec3 color = base * (0.03 + diffuse) + vec3(1.0) * spec + vec3(0.86, 0.9, 0.98) * specSoft;
+        color += vec3(0.25, 0.30, 0.45) * rim * 0.22;
+
         gl_FragColor = vec4(color, 1.0);
       }
     `;
@@ -358,6 +432,8 @@ function animateMoon(ts) {
     moonGL.uniform1f(moonUniforms.time, ts * 0.001);
     moonGL.drawArrays(moonGL.TRIANGLE_STRIP, 0, 4);
   }
+  panelOffset += (panelTargetOffset - panelOffset) * 0.18;
+  celestialTrack.style.transform = `translateX(${-panelOffset}px)`;
   requestAnimationFrame(animateMoon);
 }
 
@@ -389,7 +465,7 @@ function getPhaseNameFromAge(age) {
 
 const sf = document.getElementById('starfield');
 const sctx = sf.getContext('2d');
-const NEON = ['#00f5ff', '#ff2d95', '#c4ff00', '#ffb020', '#fff23a', '#7cfc00', '#ff6b9d', '#38bdf8', '#f472b6'];
+const NEON = ['#00f5ff', '#ff2d95', '#c4ff00', '#ffb020', '#fff23a', '#38bdf8'];
 let stars = [];
 let bgArcs = [];
 let skyT = 0;
@@ -412,10 +488,10 @@ function initStars() {
   sf.height = window.innerHeight;
   stars = [];
   bgArcs = [];
-  for (let i = 0; i < 180; i++) {
+  for (let i = 0; i < 72; i++) {
     const kindRoll = Math.random();
-    const kind = kindRoll < 0.45 ? 'dot' : kindRoll < 0.72 ? 'star' : 'square';
-    if (Math.random() < 0.35) {
+    const kind = kindRoll < 0.72 ? 'dot' : 'star';
+    if (Math.random() < 0.22) {
       const ocx = Math.random() * sf.width;
       const ocy = Math.random() * sf.height;
       const orad = 60 + Math.random() * 220;
@@ -445,7 +521,7 @@ function initStars() {
     bgArcs.push({
       cx: Math.random() * sf.width,
       cy: Math.random() * sf.height * 0.65,
-      r: 180 + Math.random() * 380,
+      r: 240 + Math.random() * 420,
       start: Math.random() * Math.PI * 2,
       sweep: 0.6 + Math.random() * 1.0,
       rot: 0,
@@ -455,9 +531,9 @@ function initStars() {
 }
 
 function drawBlueprintGrid() {
-  sctx.strokeStyle = 'rgba(20, 80, 40, 0.22)';
+  sctx.strokeStyle = 'rgba(34, 86, 68, 0.12)';
   sctx.lineWidth = 1;
-  const step = 48;
+  const step = 62;
   for (let x = 0; x <= sf.width; x += step) {
     sctx.beginPath();
     sctx.moveTo(x, 0);
@@ -473,9 +549,9 @@ function drawBlueprintGrid() {
 }
 
 function drawBackgroundArcs() {
-  sctx.strokeStyle = 'rgba(255,255,255,0.12)';
+  sctx.strokeStyle = 'rgba(255,255,255,0.08)';
   sctx.lineWidth = 1;
-  sctx.setLineDash([6, 10]);
+  sctx.setLineDash([5, 16]);
   bgArcs.forEach(a => {
     a.rot += a.spd;
     sctx.beginPath();
@@ -505,8 +581,7 @@ function drawStarsFrame() {
   sctx.fillRect(0, 0, sf.width, sf.height);
   drawBlueprintGrid();
   drawBackgroundArcs();
-  drawWavyTrail('rgba(0,245,255,0.35)', skyT, 28, sf.height * 0.35);
-  drawWavyTrail('rgba(124,252,0,0.28)', skyT * 1.1 + 2, 22, sf.height * 0.55);
+  drawWavyTrail('rgba(0,245,255,0.22)', skyT, 20, sf.height * 0.42);
 
   stars.forEach(s => {
     s.t += s.pulse;
@@ -526,9 +601,6 @@ function drawStarsFrame() {
     if (s.kind === 'star') {
       drawFivePointStar(x, y, s.r * 2.2, s.r * 0.9, s.t * 0.3);
       sctx.fill();
-    } else if (s.kind === 'square') {
-      const h = s.r * 1.6;
-      sctx.fillRect(x - h, y - h, h * 2, h * 2);
     } else {
       sctx.beginPath();
       sctx.arc(x, y, s.r, 0, Math.PI * 2);
@@ -658,61 +730,56 @@ function drawOrnateRing(cx, cy, rOuter, rInner, gold, t) {
 function drawOrbits() {
   const w = oc.width, h = oc.height;
   octx.clearRect(0, 0, w, h);
-  orbitPhase += 0.012;
+  orbitPhase += 0.009;
+  const phase = (moonSmoothAge / SYNODIC_CYCLE) * Math.PI * 2;
 
-  drawRadiatingWedges(CX, CY, orbitPhase * 0.08);
+  drawRadiatingWedges(CX, CY, orbitPhase * 0.03);
+  drawOrnateRing(CX, CY, R_MOON_VISUAL + 54, R_MOON_VISUAL + 38, '#d4a84b', orbitPhase * 0.6);
+  drawOrbitWavyDashed('rgba(0,245,255,0.42)', CX, CY, R_MOON_VISUAL + 66, orbitPhase, [3, 7]);
 
-  octx.globalCompositeOperation = 'lighter';
-  drawOrbitFourPointStar(CX - 62, CY - 58, 52, orbitPhase * 0.05, 'rgba(56, 189, 248, 0.35)');
-  octx.globalCompositeOperation = 'source-over';
-
-  octx.strokeStyle = 'rgba(255,255,255,0.18)';
-  octx.lineWidth = 1;
-  [280, 320].forEach((rad, idx) => {
-    octx.beginPath();
-    octx.arc(CX - 40 + idx * 25, CY + 20, rad, -0.7 + orbitPhase * 0.02, 0.9 + orbitPhase * 0.02);
-    octx.stroke();
-  });
-  octx.setLineDash([8, 14]);
   octx.strokeStyle = 'rgba(255,255,255,0.12)';
+  octx.lineWidth = 1;
+  octx.setLineDash([7, 13]);
   octx.beginPath();
-  octx.arc(CX + 120, CY - 80, 200, 0.2, 1.1);
+  octx.arc(CX, CY, R_MOON_VISUAL + 86, 0, Math.PI * 2);
   octx.stroke();
   octx.setLineDash([]);
 
-  drawOrbitWavyDashed('rgba(0,245,255,0.55)', CX, CY, R_MOON_VISUAL + 62, orbitPhase, [4, 6]);
-  drawOrbitWavyDashed('rgba(124,252,0,0.45)', CX, CY, R_MOON_VISUAL + 78, -orbitPhase * 1.1, [3, 7]);
+  const sunOrbitR = R_MOON_VISUAL + 96;
+  const sunX = CX + Math.cos(phase + Math.PI) * sunOrbitR;
+  const sunY = CY + Math.sin(phase + Math.PI) * sunOrbitR;
 
-  drawOrnateRing(CX, CY, R_MOON_VISUAL + 56, R_MOON_VISUAL + 38, '#d4a84b', orbitPhase);
+  octx.strokeStyle = 'rgba(255,255,255,0.08)';
+  octx.lineWidth = 1;
+  octx.beginPath();
+  octx.moveTo(CX, CY);
+  octx.lineTo(sunX, sunY);
+  octx.stroke();
 
-  for (let i = 0; i < 72; i++) {
-    const a = (i / 72) * Math.PI * 2 + orbitPhase * 0.03;
-    const inner = R_MOON_VISUAL + 28;
-    const outer = R_MOON_VISUAL + 32 + (i % 6 === 0 ? 6 : 2);
-    octx.beginPath();
-    octx.moveTo(CX + Math.cos(a) * inner, CY + Math.sin(a) * inner);
-    octx.lineTo(CX + Math.cos(a) * outer, CY + Math.sin(a) * outer);
-    octx.strokeStyle = i % 6 === 0 ? 'rgba(212,168,75,0.55)' : 'rgba(255,255,255,0.12)';
-    octx.lineWidth = 1;
-    octx.stroke();
-  }
+  // Black diamond sun
+  octx.save();
+  octx.translate(sunX, sunY);
+  octx.rotate(phase * 0.35);
+  octx.beginPath();
+  octx.moveTo(0, -16);
+  octx.lineTo(12, 0);
+  octx.lineTo(0, 16);
+  octx.lineTo(-12, 0);
+  octx.closePath();
+  const sunGrad = octx.createLinearGradient(-12, -16, 12, 16);
+  sunGrad.addColorStop(0, '#0b0b0d');
+  sunGrad.addColorStop(0.55, '#22242d');
+  sunGrad.addColorStop(1, '#050507');
+  octx.fillStyle = sunGrad;
+  octx.fill();
+  octx.strokeStyle = 'rgba(226, 200, 148, 0.65)';
+  octx.lineWidth = 1.2;
+  octx.stroke();
+  octx.restore();
 
-  [
-    { angle: 0.6, r: R_MOON_VISUAL + 48, color: '#c4ff00', size: 5 },
-    { angle: 2.1, r: R_MOON_VISUAL + 48, color: '#00f5ff', size: 4 },
-    { angle: 3.8, r: R_MOON_VISUAL + 48, color: '#fff23a', size: 3 },
-    { angle: 5.0, r: R_MOON_VISUAL + 48, color: '#ff2d95', size: 5 },
-    { angle: 1.2, r: R_MOON_VISUAL + 66, color: '#38bdf8', size: 3 },
-    { angle: 4.2, r: R_MOON_VISUAL + 66, color: '#ffb020', size: 3 }
-  ].forEach(d => {
-    octx.beginPath();
-    octx.arc(CX + Math.cos(d.angle + orbitPhase * 0.04) * d.r, CY + Math.sin(d.angle + orbitPhase * 0.04) * d.r, d.size, 0, Math.PI * 2);
-    octx.fillStyle = d.color;
-    octx.fill();
-    octx.strokeStyle = 'rgba(255,255,255,0.5)';
-    octx.lineWidth = 1;
-    octx.stroke();
-  });
+  octx.globalCompositeOperation = 'lighter';
+  drawOrbitFourPointStar(CX - 70, CY - 58, 44, orbitPhase * 0.07, 'rgba(56, 189, 248, 0.25)');
+  octx.globalCompositeOperation = 'source-over';
 
   octx.strokeStyle = 'rgba(255,255,255,0.08)';
   octx.lineWidth = 1;
@@ -722,22 +789,82 @@ function drawOrbits() {
     octx.lineTo(x2, y2);
     octx.stroke();
   });
+}
 
-  const ch = 14;
-  [[CX, CY - R_MOON_VISUAL - 8], [CX + R_MOON_VISUAL + 8, CY], [CX, CY + R_MOON_VISUAL + 8]].forEach(([x, y]) => {
-    octx.strokeStyle = 'rgba(255,255,255,0.35)';
-    octx.lineWidth = 1;
-    octx.beginPath();
-    octx.moveTo(x - ch, y);
-    octx.lineTo(x + ch, y);
-    octx.moveTo(x, y - ch);
-    octx.lineTo(x, y + ch);
-    octx.stroke();
-  });
+function drawTrajectoryView() {
+  const w = trajectoryCanvas.width;
+  const h = trajectoryCanvas.height;
+  const cx = w / 2;
+  const cy = h / 2;
+  const phase = (moonSmoothAge / SYNODIC_CYCLE) * Math.PI * 2;
+  tctx.clearRect(0, 0, w, h);
+  tctx.fillStyle = 'rgba(0,0,0,0.85)';
+  tctx.fillRect(0, 0, w, h);
+
+  tctx.strokeStyle = 'rgba(226, 200, 148, 0.24)';
+  tctx.lineWidth = 1;
+  tctx.beginPath();
+  tctx.arc(cx, cy, 86, 0, Math.PI * 2);
+  tctx.stroke();
+
+  const earthR = 16;
+  tctx.beginPath();
+  tctx.arc(cx, cy, earthR, 0, Math.PI * 2);
+  const earthGrad = tctx.createRadialGradient(cx - 4, cy - 6, 3, cx, cy, earthR);
+  earthGrad.addColorStop(0, '#3b82f6');
+  earthGrad.addColorStop(1, '#1e3a8a');
+  tctx.fillStyle = earthGrad;
+  tctx.fill();
+  tctx.strokeStyle = 'rgba(255,255,255,0.45)';
+  tctx.stroke();
+
+  const moonX = cx + Math.cos(phase) * 86;
+  const moonY = cy + Math.sin(phase) * 86;
+  tctx.beginPath();
+  tctx.arc(moonX, moonY, 10, 0, Math.PI * 2);
+  const moonGrad = tctx.createRadialGradient(moonX - 3, moonY - 4, 2, moonX, moonY, 10);
+  moonGrad.addColorStop(0, '#fffefa');
+  moonGrad.addColorStop(1, '#d7dde8');
+  tctx.fillStyle = moonGrad;
+  tctx.fill();
+  tctx.strokeStyle = 'rgba(255,255,255,0.6)';
+  tctx.stroke();
+
+  const sunX = cx + Math.cos(phase + Math.PI) * 140;
+  const sunY = cy + Math.sin(phase + Math.PI) * 140;
+  tctx.save();
+  tctx.translate(sunX, sunY);
+  tctx.rotate(phase * 0.35);
+  tctx.beginPath();
+  tctx.moveTo(0, -14);
+  tctx.lineTo(10, 0);
+  tctx.lineTo(0, 14);
+  tctx.lineTo(-10, 0);
+  tctx.closePath();
+  tctx.fillStyle = '#111217';
+  tctx.fill();
+  tctx.strokeStyle = 'rgba(226, 200, 148, 0.8)';
+  tctx.stroke();
+  tctx.restore();
+
+  tctx.strokeStyle = 'rgba(255,255,255,0.18)';
+  tctx.setLineDash([5, 8]);
+  tctx.beginPath();
+  tctx.moveTo(sunX, sunY);
+  tctx.lineTo(cx, cy);
+  tctx.stroke();
+  tctx.setLineDash([]);
+
+  tctx.fillStyle = 'rgba(226, 200, 148, 0.85)';
+  tctx.font = '11px Inter';
+  tctx.fillText('EARTH', cx - 18, cy + 34);
+  tctx.fillText('MOON', moonX + 12, moonY + 4);
+  tctx.fillText('SUN', sunX + 12, sunY + 4);
 }
 
 function animateOrbitDecor() {
   drawOrbits();
+  drawTrajectoryView();
   requestAnimationFrame(animateOrbitDecor);
 }
 animateOrbitDecor();
@@ -951,7 +1078,35 @@ document.getElementById('liveBtn').addEventListener('click', () => {
   }
 });
 
+const moonWrap = document.querySelector('.moon-wrap');
 const moonContainer = document.querySelector('.moon-img-container');
+const PANEL_WIDTH = 340;
+
+moonWrap.addEventListener('pointerdown', e => {
+  const rect = moonWrap.getBoundingClientRect();
+  const cx = rect.left + rect.width / 2;
+  const cy = rect.top + rect.height / 2;
+  const d = Math.hypot(e.clientX - cx, e.clientY - cy);
+  if (d > 130) {
+    panelSwipe = { id: e.pointerId, x: e.clientX, start: panelTargetOffset };
+    moonWrap.setPointerCapture(e.pointerId);
+  }
+});
+
+moonWrap.addEventListener('pointermove', e => {
+  if (!panelSwipe || panelSwipe.id !== e.pointerId) return;
+  const dx = e.clientX - panelSwipe.x;
+  panelTargetOffset = clamp(panelSwipe.start + dx, 0, PANEL_WIDTH);
+});
+
+moonWrap.addEventListener('pointerup', e => {
+  if (!panelSwipe || panelSwipe.id !== e.pointerId) return;
+  panelTargetOffset = panelTargetOffset > PANEL_WIDTH * 0.45 ? PANEL_WIDTH : 0;
+  panelSwipe = null;
+});
+
+moonWrap.addEventListener('pointercancel', () => { panelSwipe = null; });
+
 moonContainer.addEventListener('pointerdown', e => {
   dragState = {
     id: e.pointerId,
