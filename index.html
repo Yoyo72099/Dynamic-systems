@@ -16,34 +16,34 @@
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      background: radial-gradient(circle at 20% 0%, #f5f1ea 0, #ece6de 55%, #e4ddd3 100%);
-      color: #1f2933;
+      background: #000000;
+      color: #f9fafb;
       font-family: 'Nunito', sans-serif;
       min-height: 100vh;
       overflow-x: hidden;
     }
-    #starfield { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; mix-blend-mode: multiply; }
+    #starfield { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
     .page-track { position: relative; z-index: 1; width: 200vw; min-height: 100vh; display: flex; transform: translateX(0); transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1); }
     .page-panel { width: 100vw; min-height: 100vh; flex: 0 0 100vw; }
     .main { display: grid; grid-template-columns: 220px 1fr 220px; min-height: 100vh; padding: 30px; gap: 20px; }
-    .topbar { grid-column: 1/-1; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(0,0,0,0.12); padding-bottom: 16px; }
-    .topbar-title { font-family: 'Bodoni Moda', serif; font-size: 26px; letter-spacing: 3px; color: rgba(22, 24, 29, 0.94); line-height: 0.9; }
+    .topbar { grid-column: 1/-1; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.14); padding-bottom: 16px; }
+    .topbar-title { font-family: 'Bodoni Moda', serif; font-size: 26px; letter-spacing: 3px; color: rgba(249, 250, 251, 0.94); line-height: 0.9; }
     .topbar-status { font-size: 9px; letter-spacing: 3px; color: #7ee787; }
     .topbar-date { font-size: 9px; letter-spacing: 2px; color: rgba(180, 190, 200, 0.5); }
     .panel-left, .panel-right { display: flex; flex-direction: column; gap: 20px; padding-top: 20px; }
     .data-block {
-      border: 1px solid rgba(0, 0, 0, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.16);
       padding: 16px;
       position: relative;
-      background: linear-gradient(155deg, rgba(255, 255, 255, 0.86), rgba(255, 255, 255, 0.72));
+      background: linear-gradient(155deg, rgba(15, 23, 42, 0.94), rgba(15, 23, 42, 0.7));
       border-radius: 14px;
       backdrop-filter: blur(10px) saturate(1.15);
-      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.18);
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.6);
     }
-    .data-block::before { content: ''; position: absolute; top: -1px; left: 10px; width: 30px; height: 1px; background: #b7a58a; }
-    .data-block-label { font-size: 8px; letter-spacing: 3px; color: rgba(100, 110, 120, 0.85); text-transform: uppercase; margin-bottom: 10px; }
-    .data-block-value { font-size: 22px; font-weight: 700; color: #111827; line-height: 1; }
-    .data-block-sub { font-size: 9px; color: rgba(107, 114, 128, 0.85); margin-top: 6px; letter-spacing: 1px; }
+    .data-block::before { content: ''; position: absolute; top: -1px; left: 10px; width: 30px; height: 1px; background: #e5e7eb; }
+    .data-block-label { font-size: 8px; letter-spacing: 3px; color: rgba(209, 213, 219, 0.9); text-transform: uppercase; margin-bottom: 10px; }
+    .data-block-value { font-size: 22px; font-weight: 700; color: #f9fafb; line-height: 1; }
+    .data-block-sub { font-size: 9px; color: rgba(156, 163, 175, 0.9); margin-top: 6px; letter-spacing: 1px; }
     .illum-bar { width: 100%; height: 2px; background: rgba(255,255,255,0.08); margin-top: 10px; }
     .illum-fill { height: 100%; background: linear-gradient(90deg, rgba(255,255,255,0.1), #fff); transition: width 1.2s ease; }
 
@@ -498,7 +498,16 @@ function getPhaseNameFromAge(age) {
 
 const sf = document.getElementById('starfield');
 const sctx = sf.getContext('2d');
-const NEON = ['#e5e1d8', '#d4cbbd', '#b8afa1'];
+const diamondImg = new Image();
+diamondImg.src = 'https://github.com/Yoyo72099/Dynamic-systems/blob/main/IMG_8411.PNG?raw=true';
+let diamondReady = false;
+diamondImg.onload = () => { diamondReady = true; };
+const DIAMOND_POSITIONS = Array.from({ length: 18 }).map((_, i) => ({
+  x: 0.08 + Math.random() * 0.84,
+  y: 0.08 + Math.random() * 0.84,
+  s: 0.12 + Math.random() * 0.22,
+  r: Math.random() * Math.PI * 2 + i * 0.12
+}));
 let skyT = 0;
 
 function initStars() {
@@ -508,27 +517,24 @@ function initStars() {
 
 function drawStarsFrame() {
   skyT += 0.008;
-  sctx.fillStyle = 'rgba(244, 238, 228, 1)';
+  sctx.fillStyle = '#000000';
   sctx.fillRect(0, 0, sf.width, sf.height);
 
-  const dotSize = 1.4;
-  const spacing = 7;
-  const jitter = 0.8;
-  for (let y = 0; y < sf.height + spacing; y += spacing) {
-    for (let x = 0; x < sf.width + spacing; x += spacing) {
-      const n = (x * 0.73 + y * 1.19) * 0.015;
-      const flicker = 0.6 + 0.3 * Math.abs(Math.sin(n + skyT * 0.9));
-      if (flicker < 0.72 && Math.random() > 0.08) continue;
-      const jx = (Math.random() - 0.5) * jitter;
-      const jy = (Math.random() - 0.5) * jitter;
-      const cx = x + jx;
-      const cy = y + jy;
-      const roll = Math.abs(Math.sin(n + 3.17));
-      const idx = roll < 0.9 ? 0 : 1 + Math.floor(roll * (NEON.length - 1));
-      sctx.fillStyle = NEON[idx];
-      sctx.globalAlpha = flicker;
-      sctx.fillRect(cx, cy, dotSize, dotSize);
-    }
+  if (diamondReady) {
+    const minSide = Math.min(sf.width, sf.height);
+    DIAMOND_POSITIONS.forEach((d, idx) => {
+      const px = d.x * sf.width;
+      const py = d.y * sf.height;
+      const base = minSide * d.s;
+      const pulse = 1.0 + 0.08 * Math.sin(skyT * 1.1 + idx * 0.7);
+      const size = base * pulse;
+      sctx.save();
+      sctx.translate(px, py);
+      sctx.rotate(d.r + skyT * 0.04);
+      sctx.globalAlpha = 0.35 + 0.35 * Math.sin(skyT * 0.9 + idx);
+      sctx.drawImage(diamondImg, -size / 2, -size / 2, size, size);
+      sctx.restore();
+    });
   }
   sctx.globalAlpha = 1.0;
   requestAnimationFrame(drawStarsFrame);
