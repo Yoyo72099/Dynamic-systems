@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>LUNAR</title>
-  <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,700;6..96,900&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,700;6..96,900&family=Nunito:wght@400;500;700&display=swap" rel="stylesheet">
   <style>
     @font-face {
       font-family: 'Love Is Gone';
@@ -16,7 +16,7 @@
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      background: #000000;
+      background: radial-gradient(circle at 20% 0%, #0b1220 0, #020617 55%, #000000 100%);
       color: #f5f5f5;
       font-family: 'Nunito', sans-serif;
       min-height: 100vh;
@@ -27,7 +27,7 @@
     .page-panel { width: 100vw; min-height: 100vh; flex: 0 0 100vw; }
     .main { display: grid; grid-template-columns: 220px 1fr 220px; min-height: 100vh; padding: 30px; gap: 20px; }
     .topbar { grid-column: 1/-1; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.18); padding-bottom: 16px; }
-    .topbar-title { font-family: 'Love Is Gone', 'Bodoni Moda', serif; font-size: 28px; letter-spacing: 3px; color: rgba(240, 230, 210, 0.92); line-height: 0.9; }
+    .topbar-title { font-family: 'Bodoni Moda', serif; font-size: 26px; letter-spacing: 3px; color: rgba(240, 230, 210, 0.92); line-height: 0.9; }
     .topbar-status { font-size: 9px; letter-spacing: 3px; color: #7ee787; }
     .topbar-date { font-size: 9px; letter-spacing: 2px; color: rgba(180, 190, 200, 0.5); }
     .panel-left, .panel-right { display: flex; flex-direction: column; gap: 20px; padding-top: 20px; }
@@ -354,32 +354,36 @@ function initMoon3D() {
 
         float lon = atan(n.x, n.z) + uRot;
         float lat = asin(n.y);
-        vec2 uv = vec2(lon * 0.38, lat * 0.55);
+        vec2 uv = vec2(lon * 0.42, lat * 0.60);
 
-        float grain = noise(uv * 4.0) * 0.3 + noise(uv * 9.0) * 0.2;
-        float nacre = noise(uv * 6.0 + vec2(uTime * 0.015, -uTime * 0.012));
-        vec3 pearlBase = vec3(0.93, 0.93, 0.95);
-        vec3 pearlTint1 = vec3(0.88, 0.90, 0.98);
-        vec3 pearlTint2 = vec3(0.90, 0.87, 0.96);
-        float mixBand = clamp(0.4 + 0.4 * n.y, 0.0, 1.0);
-        vec3 tint = mix(pearlTint1, pearlTint2, mixBand);
-        vec3 base = mix(pearlBase, tint, clamp(grain * 0.4 + nacre * 0.35, 0.0, 1.0));
+        float grain = noise(uv * 5.0) * 0.35 + noise(uv * 11.0) * 0.25;
+        float nacre = noise(uv * 7.0 + vec2(uTime * 0.02, -uTime * 0.015));
+        vec3 pearlBase = vec3(0.92, 0.92, 0.95);
+        vec3 pearlTint1 = vec3(0.88, 0.90, 0.99);
+        vec3 pearlTint2 = vec3(0.92, 0.88, 0.97);
+        float band = clamp(0.35 + 0.45 * n.y, 0.0, 1.0);
+        vec3 tint = mix(pearlTint1, pearlTint2, band);
+        vec3 base = mix(pearlBase, tint, clamp(grain * 0.45 + nacre * 0.35, 0.0, 1.0));
 
-        vec3 lMain = normalize(vec3(sin(uPhase), 0.13, -cos(uPhase)));
+        vec3 lMain = normalize(vec3(sin(uPhase), 0.12, -cos(uPhase)));
         vec3 lFill = normalize(vec3(0.22, -0.08, 1.0));
         float dMain = max(0.0, dot(n, lMain));
         float dFill = max(0.0, dot(n, lFill));
-        float earthshine = 0.18 * dFill;
-        float diffuse = dMain * 1.08 + earthshine;
+        float earthshine = 0.10 * dFill;
+        float diffuse = dMain * 1.6 + earthshine;
 
         vec3 viewDir = vec3(0.0, 0.0, 1.0);
         vec3 halfVec = normalize(lMain + viewDir);
-        float spec = pow(max(dot(n, halfVec), 0.0), 82.0) * 0.9;
-        float specSoft = pow(max(dot(n, halfVec), 0.0), 20.0) * 0.18;
+        float spec = pow(max(dot(n, halfVec), 0.0), 82.0) * 0.85;
+        float specSoft = pow(max(dot(n, halfVec), 0.0), 20.0) * 0.20;
 
-        float rim = pow(1.0 - max(dot(n, viewDir), 0.0), 2.0);
-        vec3 color = base * (0.05 + diffuse) + vec3(1.0) * spec + vec3(0.90, 0.92, 0.99) * specSoft;
-        color += vec3(0.22, 0.28, 0.50) * rim * 0.18;
+        float lambert = max(dot(n, viewDir), 0.0);
+        float rim = pow(1.0 - lambert, 2.2);
+
+        float lighting = clamp(0.04 + diffuse, 0.0, 1.0);
+        vec3 color = base * lighting + vec3(1.0) * spec + vec3(0.90, 0.92, 0.99) * specSoft;
+        color *= mix(0.10, 1.0, smoothstep(0.07, 0.22, dMain));
+        color += vec3(0.22, 0.30, 0.55) * rim * 0.22;
 
         gl_FragColor = vec4(color, 1.0);
       }
@@ -459,10 +463,9 @@ function animateMoon(ts) {
     moonGL.uniform1f(moonUniforms.time, ts * 0.001);
     moonGL.drawArrays(moonGL.TRIANGLE_STRIP, 0, 4);
   }
-  pageOffset += (pageTargetOffset - pageOffset) * 0.18;
+  pageOffset += (pageTargetOffset - pageOffset) * 0.12;
   pageTrack.style.transform = `translateX(${-pageOffset}px)`;
   updateSunGlyphPosition();
-  drawTrajectoryView();
   requestAnimationFrame(animateMoon);
 }
 
@@ -494,7 +497,7 @@ function getPhaseNameFromAge(age) {
 
 const sf = document.getElementById('starfield');
 const sctx = sf.getContext('2d');
-const NEON = ['#00f5ff', '#ff2d95', '#c4ff00', '#ffb020', '#fff23a', '#38bdf8'];
+const NEON = ['#0b1120', '#f9fafb', '#e5e7eb', '#93c5fd', '#facc15', '#f97316'];
 let skyT = 0;
 
 function initStars() {
@@ -504,27 +507,33 @@ function initStars() {
 
 function drawStarsFrame() {
   skyT += 0.008;
-  sctx.fillStyle = '#000000';
+  const g = sctx.createLinearGradient(0, 0, 0, sf.height);
+  g.addColorStop(0, '#020617');
+  g.addColorStop(1, '#02010a');
+  sctx.fillStyle = g;
   sctx.fillRect(0, 0, sf.width, sf.height);
 
-  const dotSize = 3;
-  const spacing = 9;
-  const jitter = 1.4;
+  const dotSize = 2.4;
+  const spacing = 10;
+  const jitter = 1.2;
   for (let y = 0; y < sf.height + spacing; y += spacing) {
     for (let x = 0; x < sf.width + spacing; x += spacing) {
       const n = (x * 0.73 + y * 1.19) * 0.015;
-      const flicker = 0.55 + 0.45 * Math.abs(Math.sin(n + skyT * 1.2));
-      if (flicker < 0.6 && Math.random() > 0.02) continue;
+      const flicker = 0.55 + 0.35 * Math.abs(Math.sin(n + skyT * 1.1));
+      if (flicker < 0.65 && Math.random() > 0.06) continue;
       const jx = (Math.random() - 0.5) * jitter;
       const jy = (Math.random() - 0.5) * jitter;
       const cx = x + jx;
       const cy = y + jy;
-      const paletteIndex = Math.floor(((Math.sin(n) + 1.0) * 0.5) * NEON.length) % NEON.length;
-      sctx.fillStyle = NEON[paletteIndex];
-      sctx.globalAlpha = flicker * 0.9;
-      sctx.beginPath();
-      sctx.arc(cx, cy, dotSize * 0.45, 0, Math.PI * 2);
-      sctx.fill();
+      const roll = Math.abs(Math.sin(n));
+      if (roll < 0.72) {
+        sctx.fillStyle = '#020617';
+      } else {
+        const idx = 1 + Math.floor(roll * (NEON.length - 1));
+        sctx.fillStyle = NEON[idx];
+      }
+      sctx.globalAlpha = flicker;
+      sctx.fillRect(cx, cy, dotSize, dotSize);
     }
   }
   sctx.globalAlpha = 1.0;
@@ -553,7 +562,10 @@ function drawTrajectoryView() {
   const cy = h / 2;
   const phase = (moonSmoothAge / SYNODIC_CYCLE) * Math.PI * 2;
   tctx.clearRect(0, 0, w, h);
-  tctx.fillStyle = 'rgba(0,0,0,0.85)';
+  const bg = tctx.createLinearGradient(0, 0, 0, h);
+  bg.addColorStop(0, '#020617');
+  bg.addColorStop(1, '#02010a');
+  tctx.fillStyle = bg;
   tctx.fillRect(0, 0, w, h);
 
   tctx.strokeStyle = 'rgba(226, 200, 148, 0.24)';
