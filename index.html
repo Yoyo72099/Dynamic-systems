@@ -15,37 +15,74 @@
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --tunnel-bg: #f3ead0;
+      --tunnel-bg-deep: #e8dcc0;
+      --ink: #14120f;
+      --ink-soft: rgba(20, 18, 15, 0.72);
+    }
     body {
-      background: #000000;
-      color: #f9fafb;
+      background: var(--tunnel-bg);
+      color: var(--ink);
       font-family: 'Nunito', sans-serif;
       min-height: 100vh;
       overflow-x: hidden;
     }
     #starfield { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
-    .page-track { position: relative; z-index: 1; width: 200vw; min-height: 100vh; display: flex; transform: translateX(0); transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1); }
+    #burstCanvas {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      pointer-events: none;
+    }
+    .page-track { position: relative; z-index: 2; width: 200vw; min-height: 100vh; display: flex; transform: translateX(0); transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1); }
     .page-panel { width: 100vw; min-height: 100vh; flex: 0 0 100vw; }
     .main { display: grid; grid-template-columns: 220px 1fr 220px; min-height: 100vh; padding: 30px; gap: 20px; }
-    .topbar { grid-column: 1/-1; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.14); padding-bottom: 16px; }
-    .topbar-title { font-family: 'Bodoni Moda', serif; font-size: 26px; letter-spacing: 3px; color: rgba(249, 250, 251, 0.94); line-height: 0.9; }
-    .topbar-status { font-size: 9px; letter-spacing: 3px; color: #7ee787; }
-    .topbar-date { font-size: 9px; letter-spacing: 2px; color: rgba(180, 190, 200, 0.5); }
-    .panel-left, .panel-right { display: flex; flex-direction: column; gap: 20px; padding-top: 20px; }
+    .topbar {
+      grid-column: 1/-1;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(20, 18, 15, 0.12);
+      padding-bottom: 16px;
+      transform: perspective(1400px) rotateX(4deg);
+      transform-origin: 50% 100%;
+    }
+    .topbar-title { font-family: 'Bodoni Moda', serif; font-size: 26px; letter-spacing: 3px; color: var(--ink); line-height: 0.9; }
+    .topbar-status { font-size: 9px; letter-spacing: 3px; color: #2d6a4f; }
+    .topbar-date { font-size: 9px; letter-spacing: 2px; color: var(--ink-soft); }
+    .panel-left, .panel-right {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      padding-top: 20px;
+      transform-style: preserve-3d;
+    }
     .data-block {
-      border: 1px solid rgba(255, 255, 255, 0.16);
+      border: 1px solid rgba(20, 18, 15, 0.2);
       padding: 16px;
       position: relative;
-      background: linear-gradient(155deg, rgba(15, 23, 42, 0.94), rgba(15, 23, 42, 0.7));
-      border-radius: 14px;
-      backdrop-filter: blur(10px) saturate(1.15);
-      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.6);
+      background: linear-gradient(145deg, rgba(255, 252, 242, 0.92), rgba(245, 236, 216, 0.78));
+      border-radius: 10px;
+      backdrop-filter: blur(8px) saturate(1.05);
+      box-shadow: 0 10px 26px rgba(20, 18, 15, 0.08);
     }
-    .data-block::before { content: ''; position: absolute; top: -1px; left: 10px; width: 30px; height: 1px; background: #e5e7eb; }
-    .data-block-label { font-size: 8px; letter-spacing: 3px; color: rgba(209, 213, 219, 0.9); text-transform: uppercase; margin-bottom: 10px; }
-    .data-block-value { font-size: 22px; font-weight: 700; color: #f9fafb; line-height: 1; }
-    .data-block-sub { font-size: 9px; color: rgba(156, 163, 175, 0.9); margin-top: 6px; letter-spacing: 1px; }
-    .illum-bar { width: 100%; height: 2px; background: rgba(255,255,255,0.08); margin-top: 10px; }
-    .illum-fill { height: 100%; background: linear-gradient(90deg, rgba(255,255,255,0.1), #fff); transition: width 1.2s ease; }
+    .panel-left .data-block {
+      transform: perspective(820px) rotateY(22deg) skewY(2.5deg);
+      transform-origin: 100% 50%;
+    }
+    .panel-right .data-block {
+      transform: perspective(820px) rotateY(-22deg) skewY(-2.5deg);
+      transform-origin: 0% 50%;
+    }
+    .data-block::before { content: ''; position: absolute; top: -1px; left: 10px; width: 30px; height: 1px; background: rgba(20, 18, 15, 0.35); }
+    .data-block-label { font-size: 8px; letter-spacing: 3px; color: var(--ink-soft); text-transform: uppercase; margin-bottom: 10px; }
+    .data-block-value { font-size: 22px; font-weight: 700; color: var(--ink); line-height: 1; }
+    .data-block-sub { font-size: 9px; color: var(--ink-soft); margin-top: 6px; letter-spacing: 1px; }
+    .illum-bar { width: 100%; height: 2px; background: rgba(20, 18, 15, 0.1); margin-top: 10px; }
+    .illum-fill { height: 100%; background: linear-gradient(90deg, rgba(20, 18, 15, 0.15), rgba(20, 18, 15, 0.55)); transition: width 1.2s ease; }
 
     .center { display: flex; flex-direction: column; align-items: center; justify-content: center; }
 
@@ -57,12 +94,13 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      z-index: 3;
     }
     .swipe-hint {
       margin-top: 10px;
       font-size: 9px;
       letter-spacing: 2px;
-      color: rgba(226, 200, 148, 0.7);
+      color: var(--ink-soft);
       text-transform: uppercase;
     }
 
@@ -72,9 +110,9 @@
       border-radius: 50%;
       overflow: hidden;
       position: relative;
-      z-index: 2;
-      border: 1px solid rgba(15, 23, 42, 0.22);
-      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.3);
+      z-index: 4;
+      border: 1px solid rgba(20, 18, 15, 0.12);
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.45);
       touch-action: none;
     }
 
@@ -86,26 +124,35 @@
       filter: drop-shadow(0 12px 38px rgba(0, 0, 0, 0.55));
     }
 
-    .moon-label { margin-top: 24px; text-align: center; }
-    .moon-phase-name { font-family: 'Love Is Gone', 'Bodoni Moda', serif; font-size: 30px; letter-spacing: 2px; color: #fff; margin-bottom: 6px; }
-    .moon-location { font-size: 9px; letter-spacing: 3px; color: rgba(255,255,255,0.3); }
+    .moon-label { margin-top: 24px; text-align: center; position: relative; z-index: 3; }
+    .moon-phase-name { font-family: 'Love Is Gone', 'Bodoni Moda', serif; font-size: 30px; letter-spacing: 2px; color: var(--ink); margin-bottom: 6px; }
+    .moon-location { font-size: 9px; letter-spacing: 3px; color: var(--ink-soft); }
     .phase-controls, .phase-slider-label, .phase-slider-row, #phaseSlider, .phase-slider-value, .phase-delta, .mode-row, .mode-btn { display: none; }
 
-    .bottombar { grid-column: 1/-1; border-top: 1px solid rgba(255,255,255,0.18); padding-top: 20px; display: flex; align-items: center; gap: 16px; }
-    .search-label { font-size: 9px; letter-spacing: 3px; color: rgba(255,255,255,0.2); white-space: nowrap; }
-    input { background: transparent; border: none; border-bottom: 1px solid rgba(255,255,255,0.15); color: #fff; font-family: 'Nunito', sans-serif; font-size: 13px; padding: 8px 4px; width: 220px; outline: none; letter-spacing: 1px; }
-    input::placeholder { color: rgba(255,255,255,0.15); }
-    input:focus { border-bottom-color: rgba(255,255,255,0.4); }
-    button { background: transparent; border: 1px solid rgba(255,255,255,0.15); color: rgba(255,255,255,0.4); font-family: 'Nunito', sans-serif; font-size: 10px; letter-spacing: 2px; padding: 8px 20px; cursor: pointer; text-transform: uppercase; transition: all 0.3s; }
-    button:hover { border-color: rgba(255,255,255,0.4); color: #fff; }
-    .status-bar { font-size: 9px; letter-spacing: 2px; color: rgba(255,255,255,0.2); margin-left: auto; }
+    .bottombar {
+      grid-column: 1/-1;
+      border-top: 1px solid rgba(20, 18, 15, 0.12);
+      padding-top: 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      transform: perspective(1400px) rotateX(-5deg);
+      transform-origin: 50% 0%;
+    }
+    .search-label { font-size: 9px; letter-spacing: 3px; color: var(--ink-soft); white-space: nowrap; }
+    input { background: transparent; border: none; border-bottom: 1px solid rgba(20, 18, 15, 0.22); color: var(--ink); font-family: 'Nunito', sans-serif; font-size: 13px; padding: 8px 4px; width: 220px; outline: none; letter-spacing: 1px; }
+    input::placeholder { color: rgba(20, 18, 15, 0.28); }
+    input:focus { border-bottom-color: rgba(20, 18, 15, 0.45); }
+    button { background: transparent; border: 1px solid rgba(20, 18, 15, 0.25); color: var(--ink-soft); font-family: 'Nunito', sans-serif; font-size: 10px; letter-spacing: 2px; padding: 8px 20px; cursor: pointer; text-transform: uppercase; transition: all 0.3s; }
+    button:hover { border-color: rgba(20, 18, 15, 0.5); color: var(--ink); }
+    .status-bar { font-size: 9px; letter-spacing: 2px; color: var(--ink-soft); margin-left: auto; }
     .status-bar.error { color: #f87171; }
     .status-bar.ok { color: #7ee787; }
     .about-hover {
       position: relative;
       font-size: 10px;
       letter-spacing: 2px;
-      color: rgba(226, 200, 148, 0.8);
+      color: var(--ink-soft);
       text-transform: uppercase;
       cursor: default;
     }
@@ -116,10 +163,10 @@
       width: 340px;
       padding: 14px 16px;
       border-radius: 12px;
-      background: linear-gradient(145deg, rgba(255,255,255,0.18), rgba(255,255,255,0.06));
-      border: 1px solid rgba(255,255,255,0.24);
+      background: linear-gradient(145deg, rgba(255, 252, 242, 0.96), rgba(245, 236, 216, 0.9));
+      border: 1px solid rgba(20, 18, 15, 0.18);
       backdrop-filter: blur(16px);
-      color: rgba(236, 239, 244, 0.9);
+      color: var(--ink);
       line-height: 1.5;
       font-size: 12px;
       opacity: 0;
@@ -154,25 +201,29 @@
       max-height: 760px;
       display: block;
       border-radius: 20px;
-      background: rgba(3, 4, 9, 0.8);
-      border: 1px solid rgba(255,255,255,0.2);
-      box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+      background: var(--tunnel-bg-deep);
+      border: 1px solid rgba(20, 18, 15, 0.15);
+      box-shadow: 0 20px 40px rgba(20, 18, 15, 0.12);
     }
     .trajectory-caption {
       font-size: 12px;
       letter-spacing: 1px;
-      color: rgba(220, 225, 235, 0.7);
+      color: var(--ink-soft);
     }
 
     @media (max-width: 768px) {
       .main { grid-template-columns: 1fr; padding: 16px; }
       .panel-left, .panel-right { flex-direction: row; flex-wrap: wrap; }
       .data-block { flex: 1; min-width: 130px; }
+      .panel-left .data-block,
+      .panel-right .data-block { transform: none; }
+      .topbar, .bottombar { transform: none; }
     }
   </style>
 </head>
 <body>
 <canvas id="starfield"></canvas>
+<canvas id="burstCanvas" aria-hidden="true"></canvas>
 <div class="page-track" id="pageTrack">
 <div class="page-panel">
 <div class="main">
@@ -273,9 +324,12 @@ let moonSmoothAge = 14.7;
 let moonVelocity = 0;
 let moonLastFrameTs = performance.now();
 const moonCanvas = document.getElementById('moonModel');
+const burstCanvas = document.getElementById('burstCanvas');
+const bctx = burstCanvas ? burstCanvas.getContext('2d') : null;
 const trajectoryCanvas = document.getElementById('trajectoryCanvas');
 const tctx = trajectoryCanvas.getContext('2d');
 const pageTrack = document.getElementById('pageTrack');
+const moonContainer = document.querySelector('.moon-img-container');
 let moonGL = null;
 let moonProgram = null;
 let moonUniforms = null;
@@ -447,6 +501,8 @@ function animateMoon(ts) {
   pageOffset += (pageTargetOffset - pageOffset) * 0.10;
   pageTrack.style.transform = `translateX(${-pageOffset}px)`;
   updateSunGlyphPosition();
+  drawBurst();
+  drawTrajectoryView();
   requestAnimationFrame(animateMoon);
 }
 
@@ -458,10 +514,59 @@ function bootstrapMoon3D() {
   requestAnimationFrame(animateMoon);
 }
 
-bootstrapMoon3D();
-
 function clamp(v, min, max) {
   return Math.min(max, Math.max(min, v));
+}
+
+const TUNNEL_BG = '#f3ead0';
+const BURST_LINE_COUNT = 340;
+const burstLineJitter = Array.from({ length: BURST_LINE_COUNT }, (_, i) => {
+  const a = Math.sin(i * 12.9898 + 78.233) * 43758.5453;
+  const r = a - Math.floor(a);
+  return { len: 0.35 + r * 0.95, w: 0.55 + (r * 9301 % 1) * 0.9 };
+});
+
+function resizeBurstCanvas() {
+  if (!burstCanvas || !bctx) return;
+  burstCanvas.width = window.innerWidth;
+  burstCanvas.height = window.innerHeight;
+}
+
+resizeBurstCanvas();
+window.addEventListener('resize', resizeBurstCanvas);
+bootstrapMoon3D();
+
+function drawBurst() {
+  if (!burstCanvas || !bctx || !moonContainer) return;
+  const w = burstCanvas.width;
+  const h = burstCanvas.height;
+  if (!w || !h) return;
+  bctx.clearRect(0, 0, w, h);
+  if (pageOffset > window.innerWidth * 0.35) return;
+  const rect = moonContainer.getBoundingClientRect();
+  const cx = rect.left + rect.width / 2;
+  const cy = rect.top + rect.height / 2;
+  const innerR = Math.max(rect.width, rect.height) / 2 + 1.5;
+  const diag = Math.hypot(w, h);
+  const frac = clamp(moonSmoothAge / SYNODIC_CYCLE, 0, 1);
+  const illum = 0.5 * (1 - Math.cos(2 * Math.PI * frac));
+  const reach = 0.08 + illum * 0.92;
+  const outerMax = innerR + reach * (diag * 0.52);
+  bctx.lineCap = 'round';
+  bctx.strokeStyle = 'rgba(10, 9, 8, 0.88)';
+  for (let i = 0; i < BURST_LINE_COUNT; i++) {
+    const t = i / BURST_LINE_COUNT;
+    const angle = t * Math.PI * 2 + frac * 0.08 + burstLineJitter[i].w * 0.04;
+    const j = burstLineJitter[i];
+    const outer = innerR + (outerMax - innerR) * j.len * (0.82 + 0.18 * illum);
+    bctx.lineWidth = 0.55 + illum * 0.35;
+    bctx.globalAlpha = 0.14 + illum * 0.78;
+    bctx.beginPath();
+    bctx.moveTo(cx + Math.cos(angle) * innerR, cy + Math.sin(angle) * innerR);
+    bctx.lineTo(cx + Math.cos(angle) * outer, cy + Math.sin(angle) * outer);
+    bctx.stroke();
+  }
+  bctx.globalAlpha = 1;
 }
 
 function getPhaseNameFromAge(age) {
@@ -504,7 +609,7 @@ function initStars() {
 
 function drawStarsFrame() {
   skyT += 0.008;
-  sctx.fillStyle = '#000000';
+  sctx.fillStyle = TUNNEL_BG;
   sctx.fillRect(0, 0, sf.width, sf.height);
 
   if (diamondReady) {
@@ -517,7 +622,7 @@ function drawStarsFrame() {
       sctx.save();
       sctx.translate(px, py);
       sctx.rotate(d.r);
-      sctx.globalAlpha = 0.32;
+      sctx.globalAlpha = 0.22;
       sctx.drawImage(diamondImg, -size / 2, -size / 2, size, size);
       sctx.restore();
     });
@@ -528,8 +633,8 @@ function drawStarsFrame() {
     const tw = 0.35 + 0.65 * Math.abs(Math.sin(s.phase + skyT * s.speed));
     sctx.save();
     sctx.translate(s.x * sf.width, s.y * sf.height);
-    sctx.globalAlpha = 0.08 + tw * 0.24;
-    sctx.strokeStyle = '#f8fafc';
+    sctx.globalAlpha = 0.06 + tw * 0.18;
+    sctx.strokeStyle = 'rgba(20, 18, 15, 0.55)';
     sctx.lineWidth = 1;
     const l = s.size * 2.2;
     sctx.beginPath();
@@ -568,13 +673,13 @@ function drawTrajectoryView() {
   const phase = (moonSmoothAge / SYNODIC_CYCLE) * Math.PI * 2;
   const progress = Math.min(1, Math.max(0, pageOffset / Math.max(window.innerWidth, 1)));
   tctx.clearRect(0, 0, w, h);
-  tctx.fillStyle = '#05070c';
+  tctx.fillStyle = '#e8dcc0';
   tctx.fillRect(0, 0, w, h);
 
   // two silky comet lines during swipe
   tctx.save();
   tctx.globalAlpha = 0.15 + progress * 0.65;
-  tctx.strokeStyle = 'rgba(220, 230, 245, 0.9)';
+  tctx.strokeStyle = 'rgba(20, 18, 15, 0.55)';
   tctx.lineWidth = 2;
   tctx.setLineDash([10, 14]);
   for (let i = 0; i < 2; i++) {
@@ -595,7 +700,7 @@ function drawTrajectoryView() {
   tctx.translate(cx, cy);
   tctx.rotate(-0.35);
   tctx.scale(1, 0.56);
-  tctx.strokeStyle = 'rgba(226, 200, 148, 0.28)';
+  tctx.strokeStyle = 'rgba(20, 18, 15, 0.2)';
   tctx.lineWidth = 1.2;
   tctx.beginPath();
   tctx.arc(0, 0, 120, 0, Math.PI * 2);
@@ -610,7 +715,7 @@ function drawTrajectoryView() {
   earthGrad.addColorStop(1, '#1e3a8a');
   tctx.fillStyle = earthGrad;
   tctx.fill();
-  tctx.strokeStyle = 'rgba(255,255,255,0.45)';
+  tctx.strokeStyle = 'rgba(20, 18, 15, 0.35)';
   tctx.stroke();
 
   const moonOrbitR = 120;
@@ -623,7 +728,7 @@ function drawTrajectoryView() {
   moonGrad.addColorStop(1, '#d7dde8');
   tctx.fillStyle = moonGrad;
   tctx.fill();
-  tctx.strokeStyle = 'rgba(255,255,255,0.6)';
+  tctx.strokeStyle = 'rgba(20, 18, 15, 0.4)';
   tctx.stroke();
 
   const sunX = cx + Math.cos(phase + Math.PI * 0.9) * 170;
@@ -639,11 +744,11 @@ function drawTrajectoryView() {
   tctx.closePath();
   tctx.fillStyle = '#111217';
   tctx.fill();
-  tctx.strokeStyle = 'rgba(226, 200, 148, 0.8)';
+  tctx.strokeStyle = 'rgba(20, 18, 15, 0.45)';
   tctx.stroke();
   tctx.restore();
 
-  tctx.strokeStyle = 'rgba(255,255,255,0.18)';
+  tctx.strokeStyle = 'rgba(20, 18, 15, 0.22)';
   tctx.setLineDash([5, 8]);
   tctx.beginPath();
   tctx.moveTo(sunX, sunY);
@@ -651,7 +756,7 @@ function drawTrajectoryView() {
   tctx.stroke();
   tctx.setLineDash([]);
 
-  tctx.fillStyle = 'rgba(226, 200, 148, 0.85)';
+  tctx.fillStyle = 'rgba(20, 18, 15, 0.72)';
   tctx.font = '12px Nunito';
   tctx.fillText('EARTH', cx - 18, cy + 34);
   tctx.fillText('MOON', moonX + 12, moonY + 4);
@@ -826,8 +931,6 @@ async function searchCity() {
 }
 
 document.getElementById('cityInput').addEventListener('keydown', e => { if (e.key === 'Enter') searchCity(); });
-
-const moonContainer = document.querySelector('.moon-img-container');
 
 function resizeTrajectoryCanvas() {
   const css = Math.min(window.innerWidth * 0.78, 760);
