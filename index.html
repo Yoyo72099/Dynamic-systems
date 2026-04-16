@@ -419,20 +419,23 @@ function initMoon3D() {
         litColor *= mix(0.10, 1.0, smoothstep(0.07, 0.22, dMain));
         litColor += vec3(0.22, 0.30, 0.55) * rim * 0.22;
 
-        // Night side: same radial "ink lines" as the burst, converging toward disk center (crescent / half-moon read)
-        float lit = smoothstep(-0.04, 0.16, dMain);
+        // Night side: background burst continues inward — cream "paper" between thin black spokes (not a solid slab)
+        float lit = smoothstep(0.0, 0.13, dMain);
         float ang = atan(p.y, p.x);
         const float TWO_PI = 6.28318530718;
-        float spokeN = 128.0;
+        float spokeN = 300.0;
         float u = fract(ang * spokeN / TWO_PI);
         float dSpoke = min(u, 1.0 - u);
-        float ink = smoothstep(0.034, 0.0, dSpoke);
+        float ink = smoothstep(0.018, 0.0, dSpoke);
         float spokeHash = hash(vec2(floor(ang * spokeN / TWO_PI), 19.0));
-        ink *= 0.82 + 0.18 * spokeHash;
+        ink *= 0.78 + 0.22 * spokeHash;
         float r = length(p);
-        ink *= smoothstep(0.06, 0.22, r);
-        vec3 gap = vec3(0.06, 0.058, 0.065) + vec3(0.04, 0.05, 0.07) * dFill * 0.28;
-        vec3 stroke = vec3(0.0, 0.0, 0.0);
+        ink *= smoothstep(0.02, 0.07, r);
+        vec3 paper = vec3(0.953, 0.922, 0.816);
+        float inShadow = 1.0 - lit;
+        float gapLift = 0.62 + 0.28 * dFill;
+        vec3 gap = paper * gapLift * (0.88 - 0.22 * inShadow);
+        vec3 stroke = vec3(0.02, 0.019, 0.018);
         vec3 shadowLines = mix(gap, stroke, ink);
         vec3 color = mix(shadowLines, litColor, lit);
 
