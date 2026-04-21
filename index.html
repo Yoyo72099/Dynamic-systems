@@ -70,8 +70,8 @@
       }
 
       #locate-btn {
-        width: 214px;
-        height: 85px;
+        width: 190px;
+        height: 75px;
         padding: 0;
         border-radius: 0;
         background: transparent url("https://github.com/Yoyo72099/Dynamic-systems/blob/main/location.PNG?raw=true")
@@ -82,8 +82,8 @@
       }
 
       #birthday-check-btn {
-        width: 118px;
-        height: 70px;
+        width: 104px;
+        height: 62px;
         padding: 0;
         border-radius: 0;
         background: transparent url("https://github.com/Yoyo72099/Dynamic-systems/blob/main/check.PNG?raw=true")
@@ -458,6 +458,15 @@
         imgEl.alt = `${phaseName} image`;
       }
 
+      function syncMainImageWithWheel(imgEl, iconsEl, phaseName) {
+        const idx = PHASE_ORDER.indexOf(phaseName);
+        const iconImgs = iconsEl.querySelectorAll(".wheel-item img");
+        const matchedSrc = idx >= 0 ? iconImgs[idx]?.src : "";
+        const src = matchedSrc || PHASE_IMAGES[phaseName] || PHASE_IMAGES["New Moon"];
+        imgEl.src = src;
+        imgEl.alt = `${phaseName} image`;
+      }
+
       function formatDate(date) {
         return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(
           date.getDate(),
@@ -571,7 +580,7 @@
           const phase = await fetchMoonPhaseByDate(currentDate);
           tonightPhaseEl.textContent = phase;
           setWheelPhase(currentSpinner, currentIcons, phase, false);
-          setMainPhaseImage(currentPhaseImageEl, phase);
+          syncMainImageWithWheel(currentPhaseImageEl, currentIcons, phase);
         } catch (error) {
           timeStatusEl.textContent = `Time API failed. Using local time. ${error.message}`;
           currentDate = new Date();
@@ -580,7 +589,7 @@
             const fallbackPhase = await fetchMoonPhaseByDate(currentDate);
             tonightPhaseEl.textContent = fallbackPhase;
             setWheelPhase(currentSpinner, currentIcons, fallbackPhase, false);
-            setMainPhaseImage(currentPhaseImageEl, fallbackPhase);
+            syncMainImageWithWheel(currentPhaseImageEl, currentIcons, fallbackPhase);
           } catch (phaseError) {
             tonightPhaseEl.textContent = `Moon phase load failed: ${phaseError.message}`;
           }
@@ -607,7 +616,7 @@
           countdownEl.textContent = `${daysUntil(currentDate, nextMatchingDate)} day(s)`;
 
           setWheelPhase(birthdaySpinner, birthdayIcons, birthPhase, true);
-          setMainPhaseImage(birthdayPhaseImageEl, birthPhase);
+          syncMainImageWithWheel(birthdayPhaseImageEl, birthdayIcons, birthPhase);
         } catch (error) {
           birthPhaseEl.textContent = `Query failed: ${error.message}`;
           birthDateEl.textContent = "-";
@@ -628,6 +637,7 @@
     </script>
   </body>
 </html>
+
 
 
 
