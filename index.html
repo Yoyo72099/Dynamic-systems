@@ -43,6 +43,10 @@
         background: transparent;
       }
 
+      .card-top {
+        min-height: 130px;
+      }
+
       h1,
       h2 {
         margin: 0 0 0.8rem;
@@ -279,12 +283,14 @@
   <body>
     <main class="container">
       <section class="card">
-        <div class="panel-top">
-          <h1>Tonight's Moon</h1>
-          <button id="locate-btn" class="action-btn" type="button">Use My Location</button>
+        <div class="card-top">
+          <div class="panel-top">
+            <h1>Tonight's Moon</h1>
+            <button id="locate-btn" class="action-btn" type="button">Use My Location</button>
+          </div>
+          <p id="location-status" class="muted">Location not requested yet.</p>
+          <p id="time-status" class="muted">Fetching current time from API...</p>
         </div>
-        <p id="location-status" class="muted">Location not requested yet.</p>
-        <p id="time-status" class="muted">Fetching current time from API...</p>
 
         <div class="phase-wheel-wrap">
           <div class="phase-wheel" id="current-wheel">
@@ -313,12 +319,14 @@
       </section>
 
       <section class="card">
-        <h2>Birthday Moon Phase</h2>
-        <form id="birthday-form">
-          <label for="birthday">Enter your birthday</label>
-          <input id="birthday" name="birthday" type="date" required />
-          <button id="birthday-check-btn" type="submit">Check</button>
-        </form>
+        <div class="card-top">
+          <h2>Birthday Moon Phase</h2>
+          <form id="birthday-form">
+            <label for="birthday">Enter your birthday</label>
+            <input id="birthday" name="birthday" type="date" required />
+            <button id="birthday-check-btn" type="submit">Check</button>
+          </form>
+        </div>
 
         <div class="phase-wheel-wrap">
           <div class="phase-wheel" id="birthday-wheel">
@@ -645,6 +653,7 @@
     </script>
   </body>
 </html>
+
 
 
 
