@@ -53,7 +53,6 @@
       .action-btn,
       button {
         border: none;
-        border-radius: 14px;
         padding: 0.55rem 0.9rem;
         font-size: 0.92rem;
         background: #b58763;
@@ -67,7 +66,31 @@
 
       .action-btn:hover,
       button:hover {
-        background: #a67652;
+        filter: brightness(1.05);
+      }
+
+      #locate-btn {
+        width: 267px;
+        height: 106px;
+        padding: 0;
+        border-radius: 0;
+        background: transparent url("https://github.com/Yoyo72099/Dynamic-systems/blob/main/location.PNG?raw=true")
+          center / contain no-repeat;
+        box-shadow: none;
+        text-indent: -9999px;
+        overflow: hidden;
+      }
+
+      #birthday-check-btn {
+        width: 148px;
+        height: 87px;
+        padding: 0;
+        border-radius: 0;
+        background: transparent url("https://github.com/Yoyo72099/Dynamic-systems/blob/main/check.PNG?raw=true")
+          center / contain no-repeat;
+        box-shadow: none;
+        text-indent: -9999px;
+        overflow: hidden;
       }
 
       .phase-wheel-wrap {
@@ -286,7 +309,7 @@
         <form id="birthday-form">
           <label for="birthday">Enter your birthday</label>
           <input id="birthday" name="birthday" type="date" required />
-          <button type="submit">Check</button>
+          <button id="birthday-check-btn" type="submit">Check</button>
         </form>
 
         <div class="phase-wheel-wrap">
