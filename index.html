@@ -29,7 +29,7 @@
       }
 
       .container {
-        max-width: 1320px;
+        max-width: 1180px;
         margin: 1.4rem auto;
         padding: 0 1rem;
         display: grid;
@@ -40,14 +40,18 @@
       .card {
         border-radius: 24px;
         padding: 1.2rem;
-        background: transparent;
+        background: #efe4d3;
+        border: 2px solid #dbcab3;
+        box-shadow:
+          0 10px 28px rgba(35, 24, 19, 0.28),
+          inset 0 2px 0 rgba(255, 250, 244, 0.7),
+          inset 0 -2px 0 rgba(173, 143, 111, 0.35);
       }
 
       h1,
       h2 {
         margin: 0 0 0.8rem;
-        color: #fff6eb;
-        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
+        color: #503c2d;
       }
 
       .panel-top {
@@ -61,6 +65,7 @@
       .action-btn,
       button {
         border: none;
+        border-radius: 14px;
         padding: 0.55rem 0.9rem;
         font-size: 0.92rem;
         background: #b58763;
@@ -74,83 +79,38 @@
 
       .action-btn:hover,
       button:hover {
-        filter: brightness(1.05);
-      }
-
-      #locate-btn {
-        width: 190px;
-        height: 75px;
-        padding: 0;
-        border-radius: 0;
-        background: transparent url("https://github.com/Yoyo72099/Dynamic-systems/blob/main/location.PNG?raw=true")
-          center / contain no-repeat;
-        box-shadow: none;
-        text-indent: -9999px;
-        overflow: hidden;
-      }
-
-      #birthday-check-btn {
-        width: 104px;
-        height: 62px;
-        padding: 0;
-        border-radius: 0;
-        background: transparent url("https://github.com/Yoyo72099/Dynamic-systems/blob/main/check.PNG?raw=true")
-          center / contain no-repeat;
-        box-shadow: none;
-        text-indent: -9999px;
-        overflow: hidden;
+        background: #a67652;
       }
 
       .phase-wheel-wrap {
         margin: 0.7rem auto 0.85rem;
-        width: 440px;
-        height: 440px;
+        width: 290px;
+        height: 290px;
         border-radius: 50%;
-        position: relative;
+        border: 2px dashed #c9b393;
+        display: grid;
+        place-items: center;
+        background: rgba(255, 245, 231, 0.7);
       }
 
       .phase-wheel {
-        width: 410px;
-        height: 410px;
+        width: 244px;
+        height: 244px;
         position: relative;
         border-radius: 50%;
-        margin: 15px auto 0;
-      }
-
-      .wheel-spinner {
-        position: absolute;
-        inset: 0;
-        border-radius: 50%;
-        background-image: url("https://github.com/Yoyo72099/Dynamic-systems/blob/main/spin.PNG?raw=true");
-        background-position: center;
-        background-repeat: no-repeat;
-        background-size: contain;
         transition: transform 900ms cubic-bezier(0.26, 0.86, 0.39, 1.1);
-      }
-
-      #birthday-spinner {
-        background-image: url("https://github.com/Yoyo72099/Dynamic-systems/blob/main/spin2.PNG?raw=true");
-      }
-
-      .wheel-icons {
-        position: absolute;
-        inset: 0;
-        pointer-events: none;
-        z-index: 4;
-        transform: rotate(0deg);
-        will-change: transform;
       }
 
       .wheel-item {
         position: absolute;
         left: 50%;
         top: 50%;
-        width: 58px;
-        height: 58px;
+        width: 56px;
+        height: 56px;
         border-radius: 50%;
         overflow: hidden;
-        border: none;
-        box-shadow: none;
+        border: 2px solid #f8ecdd;
+        box-shadow: 0 3px 7px rgba(49, 35, 25, 0.2);
         transform-origin: center center;
       }
 
@@ -164,46 +124,30 @@
         position: absolute;
         left: 50%;
         top: 50%;
-        width: 62px;
-        height: 62px;
+        width: 74px;
+        height: 74px;
         border-radius: 50%;
         transform: translate(-50%, -50%);
-        background: transparent;
-        border: none;
+        background: radial-gradient(circle at 40% 35%, #f8f0e3, #ccb494);
+        border: 3px solid #ecdcca;
         z-index: 5;
       }
 
       .main-phase-image {
-        width: 190px;
-        height: 190px;
-        margin: 0 0 0 auto;
+        width: 168px;
+        height: 168px;
+        margin: 0 auto 0.85rem;
         display: block;
         border-radius: 50%;
         object-fit: cover;
-        border: none;
-        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.35);
-        background: rgba(255, 255, 255, 0.2);
-        order: 2;
-      }
-
-      .phase-info-row {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 0.75rem;
-        margin: -0.1rem 0 0.75rem;
-      }
-
-      .phase-details {
-        flex: 1;
-        order: 1;
-        align-self: center;
+        border: 4px solid #f7ead8;
+        box-shadow: 0 8px 16px rgba(51, 34, 24, 0.2);
+        background: #f4e9d9;
       }
 
       .muted {
         margin: 0.2rem 0 0.75rem;
-        color: #f8f0e8;
-        text-shadow: 0 2px 7px rgba(0, 0, 0, 0.35);
+        color: #5f4b3d;
       }
 
       .phase-block {
@@ -212,17 +156,15 @@
 
       .label {
         margin: 0 0 0.15rem;
-        color: #f3dfcf;
+        color: #7c5f4e;
         font-size: 0.88rem;
-        text-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
       }
 
       .value {
         margin: 0;
         font-size: 1.02rem;
-        color: #fff6eb;
+        color: #2f2831;
         font-weight: 700;
-        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
       }
 
       form {
@@ -234,18 +176,17 @@
 
       label {
         width: 100%;
-        color: #fff0e3;
+        color: #594638;
         font-weight: 700;
-        text-shadow: 0 2px 7px rgba(0, 0, 0, 0.35);
       }
 
       input {
         flex: 1;
         min-width: 160px;
-        border: 2px solid rgba(255, 243, 230, 0.85);
+        border: 2px solid #dac7ae;
         border-radius: 13px;
         padding: 0.52rem 0.75rem;
-        background: rgba(255, 252, 246, 0.9);
+        background: #fcf7ef;
         color: #413329;
         font-size: 0.95rem;
       }
@@ -253,25 +194,6 @@
       @media (max-width: 920px) {
         .container {
           grid-template-columns: 1fr;
-        }
-
-        .phase-wheel-wrap {
-          width: 360px;
-          height: 360px;
-        }
-
-        .phase-wheel {
-          width: 330px;
-          height: 330px;
-        }
-
-        .phase-info-row {
-          flex-direction: column;
-          align-items: flex-start;
-        }
-
-        .main-phase-image {
-          margin: 0;
         }
       }
     </style>
@@ -288,27 +210,22 @@
 
         <div class="phase-wheel-wrap">
           <div class="phase-wheel" id="current-wheel">
-            <div class="wheel-spinner" id="current-spinner"></div>
-            <div class="wheel-icons" id="current-icons"></div>
             <div class="wheel-center"></div>
           </div>
         </div>
-        <div class="phase-info-row">
-          <img
-            id="current-phase-image"
-            class="main-phase-image"
-            alt="Current moon phase image"
-          />
-          <div class="phase-details">
-            <div class="phase-block">
-              <p class="label">Current Date</p>
-              <p id="today-date" class="value">-</p>
-            </div>
-            <div class="phase-block">
-              <p class="label">Current Moon Phase</p>
-              <p id="tonight-phase" class="value">-</p>
-            </div>
-          </div>
+        <img
+          id="current-phase-image"
+          class="main-phase-image"
+          alt="Current moon phase image"
+        />
+
+        <div class="phase-block">
+          <p class="label">Current Date</p>
+          <p id="today-date" class="value">-</p>
+        </div>
+        <div class="phase-block">
+          <p class="label">Current Moon Phase</p>
+          <p id="tonight-phase" class="value">-</p>
         </div>
       </section>
 
@@ -317,40 +234,35 @@
         <form id="birthday-form">
           <label for="birthday">Enter your birthday</label>
           <input id="birthday" name="birthday" type="date" required />
-          <button id="birthday-check-btn" type="submit">Check</button>
+          <button type="submit">Check</button>
         </form>
 
         <div class="phase-wheel-wrap">
           <div class="phase-wheel" id="birthday-wheel">
-            <div class="wheel-spinner" id="birthday-spinner"></div>
-            <div class="wheel-icons" id="birthday-icons"></div>
             <div class="wheel-center"></div>
           </div>
         </div>
-        <div class="phase-info-row">
-          <img
-            id="birthday-phase-image"
-            class="main-phase-image"
-            alt="Birth moon phase image"
-          />
-          <div class="phase-details">
-            <div class="phase-block">
-              <p class="label">Moon phase on your birth date</p>
-              <p id="birth-phase" class="value">-</p>
-            </div>
-            <div class="phase-block">
-              <p class="label">Your birthday (YYYY-MM-DD)</p>
-              <p id="birth-date" class="value">-</p>
-            </div>
-            <div class="phase-block">
-              <p class="label">Next date with your birth moon phase</p>
-              <p id="next-phase-date" class="value">-</p>
-            </div>
-            <div class="phase-block">
-              <p class="label">Time from current phase to your birth phase</p>
-              <p id="countdown" class="value">-</p>
-            </div>
-          </div>
+        <img
+          id="birthday-phase-image"
+          class="main-phase-image"
+          alt="Next birthday moon phase image"
+        />
+
+        <div class="phase-block">
+          <p class="label">Moon phase on your birth date</p>
+          <p id="birth-phase" class="value">-</p>
+        </div>
+        <div class="phase-block">
+          <p class="label">Your next birthday date</p>
+          <p id="next-birthday-date" class="value">-</p>
+        </div>
+        <div class="phase-block">
+          <p class="label">Moon phase on your next birthday</p>
+          <p id="next-birthday-phase" class="value">-</p>
+        </div>
+        <div class="phase-block">
+          <p class="label">Time until your next birthday</p>
+          <p id="countdown" class="value">-</p>
         </div>
       </section>
     </main>
@@ -389,26 +301,22 @@
       const todayDateEl = document.querySelector("#today-date");
       const tonightPhaseEl = document.querySelector("#tonight-phase");
       const birthPhaseEl = document.querySelector("#birth-phase");
-      const birthDateEl = document.querySelector("#birth-date");
-      const nextPhaseDateEl = document.querySelector("#next-phase-date");
+      const nextBirthdayDateEl = document.querySelector("#next-birthday-date");
+      const nextBirthdayPhaseEl = document.querySelector("#next-birthday-phase");
       const countdownEl = document.querySelector("#countdown");
       const birthdayForm = document.querySelector("#birthday-form");
       const birthdayInput = document.querySelector("#birthday");
       const locateBtn = document.querySelector("#locate-btn");
-      const currentSpinner = document.querySelector("#current-spinner");
-      const birthdaySpinner = document.querySelector("#birthday-spinner");
-      const currentIcons = document.querySelector("#current-icons");
-      const birthdayIcons = document.querySelector("#birthday-icons");
+      const currentWheel = document.querySelector("#current-wheel");
+      const birthdayWheel = document.querySelector("#birthday-wheel");
       const currentPhaseImageEl = document.querySelector("#current-phase-image");
       const birthdayPhaseImageEl = document.querySelector("#birthday-phase-image");
 
       const monthCache = new Map();
       let currentDate = new Date();
-      const wheelState = new WeakMap();
-      const wheelAnimations = new WeakMap();
 
-      function buildWheel(iconLayerEl) {
-        const radius = 110;
+      function buildWheel(wheelEl) {
+        const radius = 98;
         const step = 360 / PHASE_ORDER.length;
 
         PHASE_ORDER.forEach((phase, index) => {
@@ -417,61 +325,21 @@
           const angle = index * step;
           item.style.transform = `translate(-50%, -50%) rotate(${angle}deg) translateY(-${radius}px) rotate(-${angle}deg)`;
           item.innerHTML = `<img src="${PHASE_IMAGES[phase]}" alt="${phase}" />`;
-          iconLayerEl.appendChild(item);
+          wheelEl.appendChild(item);
         });
       }
 
-      function setWheelPhase(spinnerEl, iconsEl, phaseName, counterRotate = false) {
+      function setWheelPhase(wheelEl, phaseName, counterRotate = false) {
         const idx = PHASE_ORDER.indexOf(phaseName);
         if (idx < 0) return;
         const step = 360 / PHASE_ORDER.length;
         const angle = idx * step;
-        // Keep the target icon at top for both wheels.
-        const target = -angle;
-        const previous = wheelState.get(iconsEl) ?? 0;
-        const direction = counterRotate ? 1 : -1;
-
-        const currentNorm = ((previous % 360) + 360) % 360;
-        const targetNorm = ((target % 360) + 360) % 360;
-        const distance =
-          direction > 0
-            ? (targetNorm - currentNorm + 360) % 360
-            : (currentNorm - targetNorm + 360) % 360;
-        const spin = previous + direction * (distance + 360);
-
-        const prevAnimation = wheelAnimations.get(iconsEl);
-        if (prevAnimation) {
-          prevAnimation.cancel();
-        }
-
-        spinnerEl.style.transform = "rotate(0deg)";
-        const animation = iconsEl.animate(
-          [{ transform: `rotate(${previous}deg)` }, { transform: `rotate(${spin}deg)` }],
-          {
-            duration: 1300,
-            easing: "cubic-bezier(0.26, 0.86, 0.39, 1.1)",
-            fill: "forwards",
-          },
-        );
-        wheelAnimations.set(iconsEl, animation);
-        animation.onfinish = () => {
-          iconsEl.style.transform = `rotate(${spin}deg)`;
-          wheelAnimations.delete(iconsEl);
-        };
-        wheelState.set(iconsEl, spin);
+        const spin = counterRotate ? angle : -angle;
+        wheelEl.style.transform = `rotate(${spin}deg)`;
       }
 
       function setMainPhaseImage(imgEl, phaseName) {
         const src = PHASE_IMAGES[phaseName] || PHASE_IMAGES["New Moon"];
-        imgEl.src = src;
-        imgEl.alt = `${phaseName} image`;
-      }
-
-      function syncMainImageWithWheel(imgEl, iconsEl, phaseName) {
-        const idx = PHASE_ORDER.indexOf(phaseName);
-        const iconImgs = iconsEl.querySelectorAll(".wheel-item img");
-        const matchedSrc = idx >= 0 ? iconImgs[idx]?.src : "";
-        const src = matchedSrc || PHASE_IMAGES[phaseName] || PHASE_IMAGES["New Moon"];
         imgEl.src = src;
         imgEl.alt = `${phaseName} image`;
       }
@@ -524,31 +392,25 @@
         const dayData = monthData.phase[String(day)];
         if (!dayData) throw new Error("No moon phase data found for this date");
 
-        if (Number(dayData.isPhaseLimit) === 1) return "New Moon";
-        if (Number(dayData.isPhaseLimit) === 2) return "First Quarter";
-        if (Number(dayData.isPhaseLimit) === 3) return "Full Moon";
-        if (Number(dayData.isPhaseLimit) === 4) return "Last Quarter";
+        const normalized = normalizePhase(dayData.phaseName, Number(dayData.lighting));
+        return normalized;
+      }
 
-        return normalizePhase(dayData.phaseName, Number(dayData.lighting));
+      function getNextBirthday(baseDate, birthdaySourceDate) {
+        const year = baseDate.getFullYear();
+        const month = birthdaySourceDate.getMonth();
+        const day = birthdaySourceDate.getDate();
+        let next = new Date(year, month, day);
+        if (next < new Date(baseDate.getFullYear(), baseDate.getMonth(), baseDate.getDate())) {
+          next = new Date(year + 1, month, day);
+        }
+        return next;
       }
 
       function daysUntil(fromDate, toDate) {
         const from = new Date(fromDate.getFullYear(), fromDate.getMonth(), fromDate.getDate());
         const to = new Date(toDate.getFullYear(), toDate.getMonth(), toDate.getDate());
         return Math.ceil((to - from) / (1000 * 60 * 60 * 24));
-      }
-
-      async function findNextDateForPhase(fromDate, targetPhase) {
-        const maxLookAheadDays = 70;
-        for (let i = 0; i <= maxLookAheadDays; i += 1) {
-          const probe = new Date(fromDate);
-          probe.setDate(probe.getDate() + i);
-          const phase = await fetchMoonPhaseByDate(probe);
-          if (phase === targetPhase) {
-            return probe;
-          }
-        }
-        throw new Error("Could not find a matching moon phase in the next 70 days");
       }
 
       function requestLocation() {
@@ -588,20 +450,12 @@
 
           const phase = await fetchMoonPhaseByDate(currentDate);
           tonightPhaseEl.textContent = phase;
-          setWheelPhase(currentSpinner, currentIcons, phase, false);
-          syncMainImageWithWheel(currentPhaseImageEl, currentIcons, phase);
+          setWheelPhase(currentWheel, phase, false);
+          setMainPhaseImage(currentPhaseImageEl, phase);
         } catch (error) {
           timeStatusEl.textContent = `Time API failed. Using local time. ${error.message}`;
           currentDate = new Date();
           todayDateEl.textContent = formatDate(currentDate);
-          try {
-            const fallbackPhase = await fetchMoonPhaseByDate(currentDate);
-            tonightPhaseEl.textContent = fallbackPhase;
-            setWheelPhase(currentSpinner, currentIcons, fallbackPhase, false);
-            syncMainImageWithWheel(currentPhaseImageEl, currentIcons, fallbackPhase);
-          } catch (phaseError) {
-            tonightPhaseEl.textContent = `Moon phase load failed: ${phaseError.message}`;
-          }
         }
       }
 
@@ -617,27 +471,29 @@
 
         try {
           const birthPhase = await fetchMoonPhaseByDate(birthday);
-          birthDateEl.textContent = formatDate(birthday);
           birthPhaseEl.textContent = `${formatDate(birthday)}: ${birthPhase}`;
 
-          const nextMatchingDate = await findNextDateForPhase(currentDate, birthPhase);
-          nextPhaseDateEl.textContent = formatDate(nextMatchingDate);
-          countdownEl.textContent = `${daysUntil(currentDate, nextMatchingDate)} day(s)`;
+          const nextBirthday = getNextBirthday(currentDate, birthday);
+          nextBirthdayDateEl.textContent = formatDate(nextBirthday);
 
-          setWheelPhase(birthdaySpinner, birthdayIcons, birthPhase, true);
-          syncMainImageWithWheel(birthdayPhaseImageEl, birthdayIcons, birthPhase);
+          const nextBirthdayPhase = await fetchMoonPhaseByDate(nextBirthday);
+          nextBirthdayPhaseEl.textContent = nextBirthdayPhase;
+          countdownEl.textContent = `${daysUntil(currentDate, nextBirthday)} day(s)`;
+
+          setWheelPhase(birthdayWheel, nextBirthdayPhase, true);
+          setMainPhaseImage(birthdayPhaseImageEl, nextBirthdayPhase);
         } catch (error) {
           birthPhaseEl.textContent = `Query failed: ${error.message}`;
-          birthDateEl.textContent = "-";
-          nextPhaseDateEl.textContent = "-";
+          nextBirthdayDateEl.textContent = "-";
+          nextBirthdayPhaseEl.textContent = "-";
           countdownEl.textContent = "-";
         }
       });
 
-      buildWheel(currentIcons);
-      buildWheel(birthdayIcons);
-      setWheelPhase(currentSpinner, currentIcons, "New Moon", false);
-      setWheelPhase(birthdaySpinner, birthdayIcons, "New Moon", true);
+      buildWheel(currentWheel);
+      buildWheel(birthdayWheel);
+      setWheelPhase(currentWheel, "New Moon", false);
+      setWheelPhase(birthdayWheel, "New Moon", true);
       setMainPhaseImage(currentPhaseImageEl, "New Moon");
       setMainPhaseImage(birthdayPhaseImageEl, "New Moon");
 
