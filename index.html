@@ -112,8 +112,8 @@
         position: absolute;
         left: 50%;
         top: 50%;
-        width: 62px;
-        height: 62px;
+        width: 58px;
+        height: 58px;
         border-radius: 50%;
         overflow: hidden;
         border: none;
@@ -155,15 +155,16 @@
 
       .phase-info-row {
         display: flex;
-        align-items: flex-start;
+        align-items: center;
         justify-content: space-between;
-        gap: 1.1rem;
-        margin: -0.2rem 0 0.8rem;
+        gap: 0.75rem;
+        margin: -0.1rem 0 0.75rem;
       }
 
       .phase-details {
         flex: 1;
         order: 1;
+        align-self: center;
       }
 
       .muted {
@@ -372,7 +373,7 @@
       let currentDate = new Date();
 
       function buildWheel(iconLayerEl) {
-        const radius = 116;
+        const radius = 110;
         const step = 360 / PHASE_ORDER.length;
 
         PHASE_ORDER.forEach((phase, index) => {
@@ -571,6 +572,7 @@
     </script>
   </body>
 </html>
+
 
 
 
