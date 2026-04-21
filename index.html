@@ -11,92 +11,179 @@
 
       body {
         margin: 0;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-        background-image:
-          linear-gradient(rgba(6, 9, 17, 0.68), rgba(6, 9, 17, 0.82)),
-          url("https://github.com/Yoyo72099/Dynamic-systems/blob/main/back.png?raw=true");
+        font-family: "Trebuchet MS", "Arial Rounded MT Bold", sans-serif;
+        background-image: url("https://github.com/Yoyo72099/Dynamic-systems/blob/main/back.png?raw=true");
         background-position: center;
         background-repeat: no-repeat;
         background-size: cover;
-        color: #e9efff;
+        color: #2f2831;
         min-height: 100vh;
       }
 
       .container {
-        max-width: 980px;
-        margin: 2rem auto 1rem;
+        max-width: 1180px;
+        margin: 1.4rem auto;
         padding: 0 1rem;
         display: grid;
-        gap: 1rem;
+        gap: 1.2rem;
         grid-template-columns: 1fr 1fr;
       }
 
       .card {
-        background: rgba(17, 26, 51, 0.78);
-        border: 1px solid rgba(153, 177, 255, 0.25);
-        border-radius: 12px;
+        border-radius: 24px;
         padding: 1.2rem;
-        backdrop-filter: blur(6px);
+        background: #efe4d3;
+        border: 2px solid #dbcab3;
+        box-shadow:
+          0 10px 28px rgba(35, 24, 19, 0.28),
+          inset 0 2px 0 rgba(255, 250, 244, 0.7),
+          inset 0 -2px 0 rgba(173, 143, 111, 0.35);
       }
 
       h1,
       h2 {
-        margin-top: 0;
+        margin: 0 0 0.8rem;
+        color: #503c2d;
       }
 
-      form {
+      .panel-top {
         display: flex;
-        gap: 0.6rem;
-        flex-wrap: wrap;
+        justify-content: space-between;
+        gap: 0.75rem;
         align-items: center;
-        margin-bottom: 1rem;
+        margin-bottom: 0.7rem;
       }
 
-      label {
-        width: 100%;
-        font-size: 0.95rem;
-      }
-
-      input,
+      .action-btn,
       button {
         border: none;
-        border-radius: 8px;
-        padding: 0.55rem 0.8rem;
-        font-size: 0.95rem;
-      }
-
-      input {
-        background: #f5f8ff;
-        color: #111;
-      }
-
-      button {
-        background: #7aa2ff;
-        color: #091431;
-        font-weight: 600;
+        border-radius: 14px;
+        padding: 0.55rem 0.9rem;
+        font-size: 0.92rem;
+        background: #b58763;
+        color: #fffaf0;
+        font-weight: 700;
         cursor: pointer;
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.25),
+          0 4px 10px rgba(64, 43, 25, 0.24);
       }
 
+      .action-btn:hover,
       button:hover {
-        background: #95b7ff;
+        background: #a67652;
+      }
+
+      .phase-wheel-wrap {
+        margin: 0.7rem auto 0.85rem;
+        width: 290px;
+        height: 290px;
+        border-radius: 50%;
+        border: 2px dashed #c9b393;
+        display: grid;
+        place-items: center;
+        background: rgba(255, 245, 231, 0.7);
+      }
+
+      .phase-wheel {
+        width: 244px;
+        height: 244px;
+        position: relative;
+        border-radius: 50%;
+        transition: transform 900ms cubic-bezier(0.26, 0.86, 0.39, 1.1);
+      }
+
+      .wheel-item {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        overflow: hidden;
+        border: 2px solid #f8ecdd;
+        box-shadow: 0 3px 7px rgba(49, 35, 25, 0.2);
+        transform-origin: center center;
+      }
+
+      .wheel-item img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .wheel-center {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 74px;
+        height: 74px;
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        background: radial-gradient(circle at 40% 35%, #f8f0e3, #ccb494);
+        border: 3px solid #ecdcca;
+        z-index: 5;
+      }
+
+      .main-phase-image {
+        width: 168px;
+        height: 168px;
+        margin: 0 auto 0.85rem;
+        display: block;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 4px solid #f7ead8;
+        box-shadow: 0 8px 16px rgba(51, 34, 24, 0.2);
+        background: #f4e9d9;
+      }
+
+      .muted {
+        margin: 0.2rem 0 0.75rem;
+        color: #5f4b3d;
       }
 
       .phase-block {
-        margin-bottom: 0.85rem;
+        margin-bottom: 0.6rem;
       }
 
       .label {
-        margin: 0 0 0.25rem;
-        font-size: 0.85rem;
-        color: #a8bcff;
+        margin: 0 0 0.15rem;
+        color: #7c5f4e;
+        font-size: 0.88rem;
       }
 
       .value {
         margin: 0;
-        font-size: 1.05rem;
+        font-size: 1.02rem;
+        color: #2f2831;
+        font-weight: 700;
       }
 
-      @media (max-width: 760px) {
+      form {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.55rem;
+        margin-bottom: 0.65rem;
+      }
+
+      label {
+        width: 100%;
+        color: #594638;
+        font-weight: 700;
+      }
+
+      input {
+        flex: 1;
+        min-width: 160px;
+        border: 2px solid #dac7ae;
+        border-radius: 13px;
+        padding: 0.52rem 0.75rem;
+        background: #fcf7ef;
+        color: #413329;
+        font-size: 0.95rem;
+      }
+
+      @media (max-width: 920px) {
         .container {
           grid-template-columns: 1fr;
         }
@@ -106,14 +193,30 @@
   <body>
     <main class="container">
       <section class="card">
-        <h1>Tonight's Moon Phase</h1>
-        <p id="time-status">Fetching current time from API...</p>
+        <div class="panel-top">
+          <h1>Tonight's Moon</h1>
+          <button id="locate-btn" class="action-btn" type="button">Use My Location</button>
+        </div>
+        <p id="location-status" class="muted">Location not requested yet.</p>
+        <p id="time-status" class="muted">Fetching current time from API...</p>
+
+        <div class="phase-wheel-wrap">
+          <div class="phase-wheel" id="current-wheel">
+            <div class="wheel-center"></div>
+          </div>
+        </div>
+        <img
+          id="current-phase-image"
+          class="main-phase-image"
+          alt="Current moon phase image"
+        />
+
         <div class="phase-block">
           <p class="label">Current Date</p>
           <p id="today-date" class="value">-</p>
         </div>
         <div class="phase-block">
-          <p class="label">Tonight's Moon Phase</p>
+          <p class="label">Current Moon Phase</p>
           <p id="tonight-phase" class="value">-</p>
         </div>
       </section>
@@ -125,6 +228,17 @@
           <input id="birthday" name="birthday" type="date" required />
           <button type="submit">Check</button>
         </form>
+
+        <div class="phase-wheel-wrap">
+          <div class="phase-wheel" id="birthday-wheel">
+            <div class="wheel-center"></div>
+          </div>
+        </div>
+        <img
+          id="birthday-phase-image"
+          class="main-phase-image"
+          alt="Next birthday moon phase image"
+        />
 
         <div class="phase-block">
           <p class="label">Moon phase on your birth date</p>
@@ -146,7 +260,36 @@
     </main>
 
     <script>
+      const PHASE_ORDER = [
+        "New Moon",
+        "Full Moon",
+        "First Quarter",
+        "Waxing Gibbous",
+        "Waxing Crescent",
+        "Waning Gibbous",
+        "Waning Crescent",
+        "Last Quarter",
+      ];
+
+      const PHASE_IMAGES = {
+        "New Moon": "https://github.com/Yoyo72099/Dynamic-systems/blob/main/new%20moon.PNG?raw=true",
+        "Full Moon": "https://github.com/Yoyo72099/Dynamic-systems/blob/main/fullmoon.PNG?raw=true",
+        "First Quarter":
+          "https://github.com/Yoyo72099/Dynamic-systems/blob/main/first%20quarter.PNG?raw=true",
+        "Waxing Gibbous":
+          "https://github.com/Yoyo72099/Dynamic-systems/blob/main/Waxing%20Gibbous.PNG?raw=true",
+        "Waxing Crescent":
+          "https://github.com/Yoyo72099/Dynamic-systems/blob/main/Waxing%20Crescent%20.PNG?raw=true",
+        "Waning Gibbous":
+          "https://github.com/Yoyo72099/Dynamic-systems/blob/main/Waning%20Gibbous.PNG?raw=true",
+        "Waning Crescent":
+          "https://github.com/Yoyo72099/Dynamic-systems/blob/main/Waning%20Crescent.PNG?raw=true",
+        "Last Quarter":
+          "https://github.com/Yoyo72099/Dynamic-systems/blob/main/Last%20Quarter.PNG?raw=true",
+      };
+
       const timeStatusEl = document.querySelector("#time-status");
+      const locationStatusEl = document.querySelector("#location-status");
       const todayDateEl = document.querySelector("#today-date");
       const tonightPhaseEl = document.querySelector("#tonight-phase");
       const birthPhaseEl = document.querySelector("#birth-phase");
@@ -155,20 +298,43 @@
       const countdownEl = document.querySelector("#countdown");
       const birthdayForm = document.querySelector("#birthday-form");
       const birthdayInput = document.querySelector("#birthday");
+      const locateBtn = document.querySelector("#locate-btn");
+      const currentWheel = document.querySelector("#current-wheel");
+      const birthdayWheel = document.querySelector("#birthday-wheel");
+      const currentPhaseImageEl = document.querySelector("#current-phase-image");
+      const birthdayPhaseImageEl = document.querySelector("#birthday-phase-image");
 
       const monthCache = new Map();
       let currentDate = new Date();
 
-      const phaseLabels = {
-        "New Moon": "New Moon",
-        "Waxing Crescent": "Waxing Crescent",
-        "First Quarter": "First Quarter",
-        "Waxing Gibbous": "Waxing Gibbous",
-        "Full Moon": "Full Moon",
-        "Waning Gibbous": "Waning Gibbous",
-        "Last Quarter": "Last Quarter",
-        "Waning Crescent": "Waning Crescent",
-      };
+      function buildWheel(wheelEl) {
+        const radius = 98;
+        const step = 360 / PHASE_ORDER.length;
+
+        PHASE_ORDER.forEach((phase, index) => {
+          const item = document.createElement("div");
+          item.className = "wheel-item";
+          const angle = index * step;
+          item.style.transform = `translate(-50%, -50%) rotate(${angle}deg) translateY(-${radius}px) rotate(-${angle}deg)`;
+          item.innerHTML = `<img src="${PHASE_IMAGES[phase]}" alt="${phase}" />`;
+          wheelEl.appendChild(item);
+        });
+      }
+
+      function setWheelPhase(wheelEl, phaseName, counterRotate = false) {
+        const idx = PHASE_ORDER.indexOf(phaseName);
+        if (idx < 0) return;
+        const step = 360 / PHASE_ORDER.length;
+        const angle = idx * step;
+        const spin = counterRotate ? angle : -angle;
+        wheelEl.style.transform = `rotate(${spin}deg)`;
+      }
+
+      function setMainPhaseImage(imgEl, phaseName) {
+        const src = PHASE_IMAGES[phaseName] || PHASE_IMAGES["New Moon"];
+        imgEl.src = src;
+        imgEl.alt = `${phaseName} image`;
+      }
 
       function formatDate(date) {
         return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(
@@ -184,13 +350,8 @@
         if (lowerName.includes("first quarter")) return "First Quarter";
         if (lowerName.includes("last quarter")) return "Last Quarter";
 
-        if (lowerName.includes("waxing")) {
-          return lighting < 50 ? "Waxing Crescent" : "Waxing Gibbous";
-        }
-
-        if (lowerName.includes("waning")) {
-          return lighting > 50 ? "Waning Gibbous" : "Waning Crescent";
-        }
+        if (lowerName.includes("waxing")) return lighting < 50 ? "Waxing Crescent" : "Waxing Gibbous";
+        if (lowerName.includes("waning")) return lighting > 50 ? "Waning Gibbous" : "Waning Crescent";
 
         return "New Moon";
       }
@@ -201,10 +362,7 @@
           `https://timeapi.io/api/Time/current/zone?timeZone=${encodeURIComponent(zone)}`,
         );
 
-        if (!response.ok) {
-          throw new Error(`Time API request failed: ${response.status}`);
-        }
-
+        if (!response.ok) throw new Error(`Time API request failed: ${response.status}`);
         return response.json();
       }
 
@@ -218,31 +376,22 @@
           const response = await fetch(
             `https://www.icalendar37.net/lunar/api/?lang=en&month=${month}&year=${year}`,
           );
-          if (!response.ok) {
-            throw new Error(`Moon phase API request failed: ${response.status}`);
-          }
-
+          if (!response.ok) throw new Error(`Moon phase API request failed: ${response.status}`);
           monthCache.set(monthKey, await response.json());
         }
 
         const monthData = monthCache.get(monthKey);
         const dayData = monthData.phase[String(day)];
-        if (!dayData) {
-          throw new Error("No moon phase data found for this date");
-        }
+        if (!dayData) throw new Error("No moon phase data found for this date");
 
         const normalized = normalizePhase(dayData.phaseName, Number(dayData.lighting));
-        return {
-          english: normalized,
-          display: phaseLabels[normalized],
-        };
+        return normalized;
       }
 
       function getNextBirthday(baseDate, birthdaySourceDate) {
         const year = baseDate.getFullYear();
         const month = birthdaySourceDate.getMonth();
         const day = birthdaySourceDate.getDate();
-
         let next = new Date(year, month, day);
         if (next < new Date(baseDate.getFullYear(), baseDate.getMonth(), baseDate.getDate())) {
           next = new Date(year + 1, month, day);
@@ -253,8 +402,27 @@
       function daysUntil(fromDate, toDate) {
         const from = new Date(fromDate.getFullYear(), fromDate.getMonth(), fromDate.getDate());
         const to = new Date(toDate.getFullYear(), toDate.getMonth(), toDate.getDate());
-        const ms = to - from;
-        return Math.ceil(ms / (1000 * 60 * 60 * 24));
+        return Math.ceil((to - from) / (1000 * 60 * 60 * 24));
+      }
+
+      function requestLocation() {
+        if (!navigator.geolocation) {
+          locationStatusEl.textContent = "Geolocation is not supported in this browser.";
+          return;
+        }
+
+        locationStatusEl.textContent = "Getting your location...";
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const lat = position.coords.latitude.toFixed(4);
+            const lon = position.coords.longitude.toFixed(4);
+            locationStatusEl.textContent = `Your location: ${lat}, ${lon}`;
+          },
+          (error) => {
+            locationStatusEl.textContent = `Location access failed: ${error.message}`;
+          },
+          { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 },
+        );
       }
 
       async function renderTonightInfo() {
@@ -272,25 +440,19 @@
           timeStatusEl.textContent = `Current timezone: ${timeData.timeZone}, current time: ${timeData.dateTime}`;
           todayDateEl.textContent = formatDate(currentDate);
 
-          const tonightPhase = await fetchMoonPhaseByDate(currentDate);
-          tonightPhaseEl.textContent = tonightPhase.display;
+          const phase = await fetchMoonPhaseByDate(currentDate);
+          tonightPhaseEl.textContent = phase;
+          setWheelPhase(currentWheel, phase, false);
+          setMainPhaseImage(currentPhaseImageEl, phase);
         } catch (error) {
-          timeStatusEl.textContent = `Could not fetch time from API. Falling back to local time. ${error.message}`;
+          timeStatusEl.textContent = `Time API failed. Using local time. ${error.message}`;
           currentDate = new Date();
           todayDateEl.textContent = formatDate(currentDate);
-
-          try {
-            const tonightPhase = await fetchMoonPhaseByDate(currentDate);
-            tonightPhaseEl.textContent = tonightPhase.display;
-          } catch (phaseError) {
-            tonightPhaseEl.textContent = `Could not load moon phase data: ${phaseError.message}`;
-          }
         }
       }
 
       birthdayForm.addEventListener("submit", async (event) => {
         event.preventDefault();
-
         if (!birthdayInput.value) return;
 
         const birthday = new Date(`${birthdayInput.value}T00:00:00`);
@@ -301,16 +463,17 @@
 
         try {
           const birthPhase = await fetchMoonPhaseByDate(birthday);
-          birthPhaseEl.textContent = `${formatDate(birthday)}: ${birthPhase.display}`;
+          birthPhaseEl.textContent = `${formatDate(birthday)}: ${birthPhase}`;
 
           const nextBirthday = getNextBirthday(currentDate, birthday);
           nextBirthdayDateEl.textContent = formatDate(nextBirthday);
 
-          const nextPhase = await fetchMoonPhaseByDate(nextBirthday);
-          nextBirthdayPhaseEl.textContent = nextPhase.display;
+          const nextBirthdayPhase = await fetchMoonPhaseByDate(nextBirthday);
+          nextBirthdayPhaseEl.textContent = nextBirthdayPhase;
+          countdownEl.textContent = `${daysUntil(currentDate, nextBirthday)} day(s)`;
 
-          const leftDays = daysUntil(currentDate, nextBirthday);
-          countdownEl.textContent = `${leftDays} day(s)`;
+          setWheelPhase(birthdayWheel, nextBirthdayPhase, true);
+          setMainPhaseImage(birthdayPhaseImageEl, nextBirthdayPhase);
         } catch (error) {
           birthPhaseEl.textContent = `Query failed: ${error.message}`;
           nextBirthdayDateEl.textContent = "-";
@@ -319,15 +482,15 @@
         }
       });
 
+      buildWheel(currentWheel);
+      buildWheel(birthdayWheel);
+      setWheelPhase(currentWheel, "New Moon", false);
+      setWheelPhase(birthdayWheel, "New Moon", true);
+      setMainPhaseImage(currentPhaseImageEl, "New Moon");
+      setMainPhaseImage(birthdayPhaseImageEl, "New Moon");
+
+      locateBtn.addEventListener("click", requestLocation);
       renderTonightInfo();
     </script>
   </body>
 </html>
-
-
-
-
-
-
-
-
