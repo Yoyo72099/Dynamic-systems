@@ -43,13 +43,6 @@
         background: transparent;
       }
 
-      .card-top {
-        height: 170px;
-        display: flex;
-        flex-direction: column;
-        justify-content: flex-start;
-      }
-
       h1,
       h2 {
         margin: 0 0 0.8rem;
@@ -183,37 +176,28 @@
       .main-phase-image {
         width: 190px;
         height: 190px;
-        margin: 0;
+        margin: 0 0 0 auto;
         display: block;
         border-radius: 50%;
         object-fit: cover;
         border: none;
         box-shadow: 0 8px 16px rgba(0, 0, 0, 0.35);
         background: rgba(255, 255, 255, 0.2);
-        grid-column: 2;
-        justify-self: center;
-        align-self: start;
+        order: 2;
       }
 
       .phase-info-row {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        align-items: start;
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
         gap: 0.75rem;
-        margin: 0 0 0.75rem;
+        margin: -0.1rem 0 0.75rem;
       }
 
       .phase-details {
-        grid-column: 1;
-        min-height: 190px;
-        display: flex;
-        flex-direction: column;
-        justify-content: flex-start;
-      }
-
-      #location-status,
-      #time-status {
-        min-height: 1.35em;
+        flex: 1;
+        order: 1;
+        align-self: flex-start;
       }
 
       .muted {
@@ -282,13 +266,12 @@
         }
 
         .phase-info-row {
-          grid-template-columns: 1fr;
+          flex-direction: column;
           align-items: flex-start;
         }
 
         .main-phase-image {
           margin: 0;
-          justify-self: start;
         }
       }
     </style>
@@ -296,14 +279,12 @@
   <body>
     <main class="container">
       <section class="card">
-        <div class="card-top">
-          <div class="panel-top">
-            <h1>Tonight's Moon</h1>
-            <button id="locate-btn" class="action-btn" type="button">Use My Location</button>
-          </div>
-          <p id="location-status" class="muted">Location not requested yet.</p>
-          <p id="time-status" class="muted">Fetching current time from API...</p>
+        <div class="panel-top">
+          <h1>Tonight's Moon</h1>
+          <button id="locate-btn" class="action-btn" type="button">Use My Location</button>
         </div>
+        <p id="location-status" class="muted">Location not requested yet.</p>
+        <p id="time-status" class="muted">Fetching current time from API...</p>
 
         <div class="phase-wheel-wrap">
           <div class="phase-wheel" id="current-wheel">
@@ -332,14 +313,12 @@
       </section>
 
       <section class="card">
-        <div class="card-top">
-          <h2>Birthday Moon Phase</h2>
-          <form id="birthday-form">
-            <label for="birthday">Enter your birthday</label>
-            <input id="birthday" name="birthday" type="date" required />
-            <button id="birthday-check-btn" type="submit">Check</button>
-          </form>
-        </div>
+        <h2>Birthday Moon Phase</h2>
+        <form id="birthday-form">
+          <label for="birthday">Enter your birthday</label>
+          <input id="birthday" name="birthday" type="date" required />
+          <button id="birthday-check-btn" type="submit">Check</button>
+        </form>
 
         <div class="phase-wheel-wrap">
           <div class="phase-wheel" id="birthday-wheel">
@@ -666,6 +645,7 @@
     </script>
   </body>
 </html>
+
 
 
 
