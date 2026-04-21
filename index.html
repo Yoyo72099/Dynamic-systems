@@ -371,6 +371,7 @@
 
       const monthCache = new Map();
       let currentDate = new Date();
+      const wheelState = new WeakMap();
 
       function buildWheel(iconLayerEl) {
         const radius = 110;
@@ -391,9 +392,14 @@
         if (idx < 0) return;
         const step = 360 / PHASE_ORDER.length;
         const angle = idx * step;
-        const spin = counterRotate ? angle : -angle;
+        const target = counterRotate ? angle : -angle;
+        const previous = wheelState.get(iconsEl) ?? 0;
+        const completedTurns = Math.floor(Math.abs(previous) / 360);
+        const directionSign = counterRotate ? 1 : -1;
+        const spin = directionSign * (completedTurns * 360 + 360) + target;
         spinnerEl.style.transform = "rotate(0deg)";
         iconsEl.style.transform = `rotate(${spin}deg)`;
+        wheelState.set(iconsEl, spin);
       }
 
       function setMainPhaseImage(imgEl, phaseName) {
