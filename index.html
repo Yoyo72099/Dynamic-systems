@@ -107,7 +107,6 @@
         pointer-events: none;
         z-index: 4;
         transform: rotate(0deg);
-        transition: transform 1000ms cubic-bezier(0.26, 0.86, 0.39, 1.1);
         will-change: transform;
       }
 
@@ -375,6 +374,7 @@
       const monthCache = new Map();
       let currentDate = new Date();
       const wheelState = new WeakMap();
+      const wheelAnimations = new WeakMap();
 
       function buildWheel(iconLayerEl) {
         const radius = 110;
@@ -397,11 +397,35 @@
         const angle = idx * step;
         const target = counterRotate ? angle : -angle;
         const previous = wheelState.get(iconsEl) ?? 0;
-        const completedTurns = Math.floor(Math.abs(previous) / 360);
-        const directionSign = counterRotate ? 1 : -1;
-        const spin = directionSign * (completedTurns * 360 + 360) + target;
+        const direction = counterRotate ? 1 : -1;
+
+        const currentNorm = ((previous % 360) + 360) % 360;
+        const targetNorm = ((target % 360) + 360) % 360;
+        const distance =
+          direction > 0
+            ? (targetNorm - currentNorm + 360) % 360
+            : (currentNorm - targetNorm + 360) % 360;
+        const spin = previous + direction * (distance + 360);
+
+        const prevAnimation = wheelAnimations.get(iconsEl);
+        if (prevAnimation) {
+          prevAnimation.cancel();
+        }
+
         spinnerEl.style.transform = "rotate(0deg)";
-        iconsEl.style.transform = `rotate(${spin}deg)`;
+        const animation = iconsEl.animate(
+          [{ transform: `rotate(${previous}deg)` }, { transform: `rotate(${spin}deg)` }],
+          {
+            duration: 1300,
+            easing: "cubic-bezier(0.26, 0.86, 0.39, 1.1)",
+            fill: "forwards",
+          },
+        );
+        wheelAnimations.set(iconsEl, animation);
+        animation.onfinish = () => {
+          iconsEl.style.transform = `rotate(${spin}deg)`;
+          wheelAnimations.delete(iconsEl);
+        };
         wheelState.set(iconsEl, spin);
       }
 
@@ -581,6 +605,7 @@
     </script>
   </body>
 </html>
+
 
 
 
