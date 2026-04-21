@@ -72,18 +72,18 @@
 
       .phase-wheel-wrap {
         margin: 0.7rem auto 0.85rem;
-        width: 320px;
-        height: 320px;
+        width: 360px;
+        height: 360px;
         border-radius: 50%;
         position: relative;
       }
 
       .phase-wheel {
-        width: 285px;
-        height: 285px;
+        width: 330px;
+        height: 330px;
         position: relative;
         border-radius: 50%;
-        margin: 17px auto 0;
+        margin: 15px auto 0;
       }
 
       .wheel-spinner {
@@ -112,8 +112,8 @@
         position: absolute;
         left: 50%;
         top: 50%;
-        width: 66px;
-        height: 66px;
+        width: 60px;
+        height: 60px;
         border-radius: 50%;
         overflow: hidden;
         border: none;
@@ -131,8 +131,8 @@
         position: absolute;
         left: 50%;
         top: 50%;
-        width: 66px;
-        height: 66px;
+        width: 62px;
+        height: 62px;
         border-radius: 50%;
         transform: translate(-50%, -50%);
         background: transparent;
@@ -333,7 +333,7 @@
       let currentDate = new Date();
 
       function buildWheel(iconLayerEl) {
-        const radius = 117;
+        const radius = 108;
         const step = 360 / PHASE_ORDER.length;
 
         PHASE_ORDER.forEach((phase, index) => {
@@ -352,7 +352,7 @@
         const step = 360 / PHASE_ORDER.length;
         const angle = idx * step;
         const spin = counterRotate ? angle : -angle;
-        spinnerEl.style.transform = `rotate(${spin}deg)`;
+        spinnerEl.style.transform = "rotate(0deg)";
         iconsEl.style.transform = `rotate(${spin}deg)`;
       }
 
@@ -532,5 +532,6 @@
     </script>
   </body>
 </html>
+
 
 
