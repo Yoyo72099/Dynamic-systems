@@ -5,13 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Moon Phase Finder</title>
     <style>
+      @font-face {
+        font-family: "Cactus Jack";
+        src: url("https://github.com/Yoyo72099/Dynamic-systems/raw/refs/heads/main/Cactus-Jack.ttf")
+          format("truetype");
+        font-weight: 400;
+        font-style: normal;
+      }
+
       * {
         box-sizing: border-box;
       }
 
       body {
         margin: 0;
-        font-family: "Trebuchet MS", "Arial Rounded MT Bold", sans-serif;
+        font-family: "Cactus Jack", "Trebuchet MS", "Arial Rounded MT Bold", sans-serif;
         background-image: url("https://github.com/Yoyo72099/Dynamic-systems/blob/main/back.png?raw=true");
         background-position: center;
         background-repeat: no-repeat;
@@ -418,7 +426,8 @@
         if (idx < 0) return;
         const step = 360 / PHASE_ORDER.length;
         const angle = idx * step;
-        const target = counterRotate ? angle : -angle;
+        // Keep the target icon at top for both wheels.
+        const target = -angle;
         const previous = wheelState.get(iconsEl) ?? 0;
         const direction = counterRotate ? 1 : -1;
 
@@ -637,6 +646,7 @@
     </script>
   </body>
 </html>
+
 
 
 
