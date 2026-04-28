@@ -34,7 +34,7 @@
         padding: 0 1rem;
         display: grid;
         gap: 1.2rem;
-        grid-template-columns: 520px minmax(0, 1fr);
+        grid-template-columns: minmax(640px, 1.26fr) minmax(410px, 0.74fr);
       }
 
       .card {
@@ -50,12 +50,26 @@
         text-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
       }
 
-      .panel-top {
+      .phase-mini-title {
+        margin: 0 0 0.32rem;
+        color: #fff6eb;
+        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
+        font-size: 0.76rem;
+        font-weight: 400;
+        letter-spacing: 0;
+        white-space: nowrap;
+      }
+
+      .top-status-row {
         display: flex;
         justify-content: space-between;
+        align-items: flex-start;
         gap: 0.75rem;
-        align-items: center;
-        margin-bottom: 0.7rem;
+        margin-bottom: 0.6rem;
+      }
+
+      .status-text {
+        flex: 1;
       }
 
       .action-btn,
@@ -78,8 +92,8 @@
       }
 
       #locate-btn {
-        width: 190px;
-        height: 75px;
+        width: 160px;
+        height: 63px;
         padding: 0;
         border-radius: 0;
         background: transparent url("https://github.com/Yoyo72099/Dynamic-systems/blob/main/location.PNG?raw=true")
@@ -102,16 +116,16 @@
       }
 
       .phase-wheel-wrap {
-        margin: 0.7rem auto 0.85rem;
-        width: 500px;
-        height: 500px;
+        margin: 1.05rem 0 0.85rem -26px;
+        width: 540px;
+        height: 540px;
         border-radius: 50%;
         position: relative;
       }
 
       .phase-wheel {
-        width: 460px;
-        height: 460px;
+        width: 500px;
+        height: 500px;
         position: relative;
         border-radius: 50%;
         margin: 20px auto 0;
@@ -176,8 +190,8 @@
       }
 
       .main-phase-image {
-        width: 280px;
-        height: 280px;
+        width: 165px;
+        height: 165px;
         margin: 0 auto 0.7rem;
         display: block;
         border-radius: 50%;
@@ -188,13 +202,264 @@
       }
 
       .wheel-card {
-        display: flex;
-        align-items: flex-start;
-        justify-content: center;
+        display: block;
+        position: relative;
+      }
+
+      .page-title-image {
+        width: 360px;
+        max-width: 90%;
+        display: block;
+        margin: 0 0 0.35rem;
+      }
+
+      .left-shift {
+        margin-left: -30px;
+      }
+
+      .about-hover {
+        position: fixed;
+        top: 12px;
+        right: 14px;
+        z-index: 120;
+      }
+
+      .about-trigger {
+        width: 128px;
+        height: 48px;
+        border: none;
+        padding: 0;
+        border-radius: 0;
+        background: transparent url("https://github.com/Yoyo72099/Dynamic-systems/blob/main/about.PNG?raw=true")
+          center / contain no-repeat;
+        box-shadow: none;
+        text-indent: -9999px;
+        overflow: hidden;
+        cursor: pointer;
+      }
+
+      .about-tooltip {
+        position: absolute;
+        top: 54px;
+        right: 0;
+        width: min(440px, 75vw);
+        padding: 0.85rem 0.95rem;
+        background: rgba(7, 10, 22, 0.9);
+        color: #f6efff;
+        border: 1px solid rgba(185, 147, 255, 0.35);
+        border-radius: 12px;
+        line-height: 1.45;
+        font-size: 0.86rem;
+        text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-4px);
+        transition: opacity 180ms ease, transform 180ms ease, visibility 180ms ease;
+        pointer-events: none;
+      }
+
+      .about-hover:hover .about-tooltip,
+      .about-hover:focus-within .about-tooltip {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
       }
 
       .right-card .phase-block {
         margin-bottom: 0.5rem;
+      }
+
+      .image-row {
+        display: grid;
+        grid-template-columns: 1fr 0.74fr;
+        gap: 0.9rem;
+        align-items: start;
+        margin-top: 34px;
+      }
+
+      .current-panel {
+        position: relative;
+        min-height: 860px;
+      }
+
+      .birthday-panel {
+        position: relative;
+        max-width: 82%;
+        justify-self: end;
+        margin-top: 0;
+        min-height: 860px;
+      }
+
+      .current-panel-form {
+        max-width: 360px;
+        position: absolute;
+        top: 458px;
+        left: 0;
+        margin: 0;
+      }
+
+      .birthday-results {
+        position: absolute;
+        top: 458px;
+        left: 0;
+        right: 0;
+        margin-top: 0;
+      }
+
+      .birthday-panel form {
+        margin-top: 1.25rem;
+        margin-bottom: 0.85rem;
+        margin-left: -26px;
+      }
+
+      .image-row .main-phase-image {
+        margin-top: 22px;
+      }
+
+      .birthday-panel h2 {
+        margin-left: -26px;
+      }
+
+      .birth-insight-trigger {
+        width: 240px;
+        margin: 0.2rem 0 0.8rem -26px;
+        padding: 0;
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        opacity: 0;
+        transform: translateY(8px);
+        transition: opacity 480ms ease, transform 480ms ease;
+        pointer-events: none;
+      }
+
+      .birth-insight-trigger.is-visible {
+        opacity: 1;
+        transform: translateY(0);
+        pointer-events: auto;
+      }
+
+      .birth-insight-trigger img {
+        width: 100%;
+        height: auto;
+        display: block;
+      }
+
+      .birth-insight-modal {
+        position: fixed;
+        inset: 0;
+        background: rgba(2, 3, 8, 0.9);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        padding: 1.4rem;
+      }
+
+      .birth-insight-modal.is-open {
+        display: flex;
+      }
+
+      .birth-insight-dialog {
+        width: min(920px, 96vw);
+        max-height: 86vh;
+        overflow-y: auto;
+        background: transparent;
+        border: none;
+        border-radius: 0;
+        padding: 0.4rem 0.6rem 0.8rem;
+        color: #f8f3ea;
+      }
+
+      .birth-insight-layout {
+        display: grid;
+        grid-template-columns: minmax(180px, 36%) 1fr;
+        gap: 2.3rem;
+        align-items: center;
+        padding-left: 0.4rem;
+      }
+
+      .birth-insight-character {
+        width: min(270px, 100%);
+        max-height: 74vh;
+        object-fit: contain;
+        justify-self: start;
+        margin-left: 0;
+        filter: drop-shadow(0 14px 26px rgba(0, 0, 0, 0.5));
+        transform-origin: center bottom;
+      }
+
+      .birth-insight-character:hover {
+        animation: cute-wobble 900ms ease-in-out infinite;
+      }
+
+      .birth-insight-text {
+        text-align: left;
+        margin-left: 20px;
+      }
+
+      @keyframes cute-wobble {
+        0% {
+          transform: translateX(0) rotate(0deg);
+        }
+        20% {
+          transform: translateX(-5px) rotate(-3deg);
+        }
+        40% {
+          transform: translateX(5px) rotate(3deg);
+        }
+        60% {
+          transform: translateX(-4px) rotate(-2.5deg);
+        }
+        80% {
+          transform: translateX(4px) rotate(2deg);
+        }
+        100% {
+          transform: translateX(0) rotate(0deg);
+        }
+      }
+
+      .birth-insight-close {
+        position: fixed;
+        top: 22px;
+        right: 28px;
+        border: none;
+        background: transparent;
+        color: #f8f3ea;
+        font-size: 2rem;
+        line-height: 1;
+        cursor: pointer;
+      }
+
+      .birth-insight-title {
+        margin: 0 0 0.2rem;
+        font-size: 1.12rem;
+      }
+
+      .birth-insight-subtitle {
+        margin: 0 0 0.9rem;
+        font-size: 0.98rem;
+        color: #b88cff;
+        letter-spacing: 0.03em;
+      }
+
+      .birth-insight-body {
+        margin: 0;
+        white-space: pre-line;
+        line-height: 1.58;
+        font-size: 1.03rem;
+      }
+
+      @media (max-width: 820px) {
+        .birth-insight-layout {
+          grid-template-columns: 1fr;
+          gap: 0.8rem;
+        }
+
+        .birth-insight-character {
+          width: min(220px, 66vw);
+          max-height: 36vh;
+        }
       }
 
       .status-grid {
@@ -268,12 +533,58 @@
           width: 365px;
           height: 365px;
         }
+
+        .image-row {
+          grid-template-columns: 1fr;
+        }
+
+        .birthday-panel {
+          max-width: 100%;
+          min-height: auto;
+        }
+
+        .current-panel {
+          min-height: auto;
+        }
+
+        .current-panel-form,
+        .birthday-results {
+          position: static;
+          top: auto;
+          left: auto;
+          right: auto;
+        }
       }
     </style>
   </head>
   <body>
     <main class="container">
       <section class="card wheel-card">
+        <div class="about-hover" aria-label="About this site">
+          <button class="about-trigger" type="button">About</button>
+          <div class="about-tooltip">
+            The moon was in a specific phase the night you were born. You probably never thought much about it.
+            This site did.
+            <br />
+            Enter your birthday to find out what the moon looked like when you arrived - and what it might say
+            about who you are. Every phase carries a different nature. Maybe yours has been with you all along.
+            <br />
+            Tonight's moon is here too. Same sky, different moment.
+          </div>
+        </div>
+        <img
+          class="page-title-image left-shift"
+          src="https://github.com/Yoyo72099/Dynamic-systems/blob/main/title.PNG?raw=true"
+          alt="Moon phase title"
+        />
+        <div class="top-status-row left-shift">
+          <div class="status-text">
+            <p id="location-status" class="muted">Location not requested yet.</p>
+            <p id="time-status" class="muted">Fetching current time from API...</p>
+          </div>
+          <button id="locate-btn" class="action-btn" type="button">Use My Location</button>
+        </div>
+
         <div class="phase-wheel-wrap">
           <div class="phase-wheel" id="current-wheel">
             <div class="wheel-spinner" id="current-spinner"></div>
@@ -284,52 +595,83 @@
       </section>
 
       <section class="card right-card">
-        <div class="panel-top">
-          <h2>Current Moon Phase</h2>
-          <button id="locate-btn" class="action-btn" type="button">Use My Location</button>
-        </div>
-        <p id="location-status" class="muted">Location not requested yet.</p>
-        <p id="time-status" class="muted">Fetching current time from API...</p>
-        <img
-          id="current-phase-image"
-          class="main-phase-image"
-          alt="Current moon phase image"
-        />
-        <div class="status-grid">
-          <div class="phase-block">
-            <p class="label">Current Date</p>
-            <p id="today-date" class="value">-</p>
+        <div class="image-row">
+          <div class="current-panel">
+            <img
+              id="current-phase-image"
+              class="main-phase-image"
+              alt="Current moon phase image"
+            />
+            <p class="phase-mini-title">Current Moon Phase</p>
+            <div class="phase-block">
+              <p class="label">Current Date</p>
+              <p id="today-date" class="value">-</p>
+            </div>
+            <div class="phase-block">
+              <p class="label">Current Moon Phase</p>
+              <p id="tonight-phase" class="value">-</p>
+            </div>
+            <form id="birthday-form" class="current-panel-form">
+              <label for="birthday">Enter your birthday</label>
+              <input id="birthday" name="birthday" type="date" required />
+              <button id="birthday-check-btn" type="submit">Check</button>
+            </form>
           </div>
-          <div class="phase-block">
-            <p class="label">Current Moon Phase</p>
-            <p id="tonight-phase" class="value">-</p>
+          <div class="birthday-panel">
+            <img
+              id="birthday-phase-image"
+              class="main-phase-image"
+              alt="Birthday moon phase image"
+            />
+            <p class="phase-mini-title">Birthday Moon Phase</p>
+            <button id="birth-insight-trigger" class="birth-insight-trigger" type="button">
+              <img
+                src="https://github.com/Yoyo72099/Dynamic-systems/blob/main/IMG_9391.PNG?raw=true"
+                alt="Open birth moon phase insight"
+              />
+            </button>
+            <div class="birthday-results">
+              <div class="phase-block">
+                <p class="label">Moon phase on your birth date</p>
+                <p id="birth-phase" class="value">-</p>
+              </div>
+              <div class="phase-block">
+                <p class="label">Your birthday (YYYY-MM-DD)</p>
+                <p id="birth-date" class="value">-</p>
+              </div>
+              <div class="phase-block">
+                <p class="label">Next date with your birth moon phase</p>
+                <p id="next-phase-date" class="value">-</p>
+              </div>
+              <div class="phase-block">
+                <p class="label">Time from current phase to your birth phase</p>
+                <p id="countdown" class="value">-</p>
+              </div>
+            </div>
           </div>
-        </div>
-
-        <h2>Birthday Moon Phase</h2>
-        <form id="birthday-form">
-          <label for="birthday">Enter your birthday</label>
-          <input id="birthday" name="birthday" type="date" required />
-          <button id="birthday-check-btn" type="submit">Check</button>
-        </form>
-        <div class="phase-block">
-          <p class="label">Moon phase on your birth date</p>
-          <p id="birth-phase" class="value">-</p>
-        </div>
-        <div class="phase-block">
-          <p class="label">Your birthday (YYYY-MM-DD)</p>
-          <p id="birth-date" class="value">-</p>
-        </div>
-        <div class="phase-block">
-          <p class="label">Next date with your birth moon phase</p>
-          <p id="next-phase-date" class="value">-</p>
-        </div>
-        <div class="phase-block">
-          <p class="label">Time from current phase to your birth phase</p>
-          <p id="countdown" class="value">-</p>
         </div>
       </section>
     </main>
+
+    <div id="birth-insight-modal" class="birth-insight-modal">
+      <div class="birth-insight-dialog">
+        <button id="birth-insight-close" class="birth-insight-close" type="button" aria-label="Close">
+          ×
+        </button>
+        <div class="birth-insight-layout">
+          <img
+            id="birth-insight-character"
+            class="birth-insight-character"
+            alt="Moon phase character illustration"
+          />
+          <div class="birth-insight-text">
+            <h3 id="birth-insight-title" class="birth-insight-title"></h3>
+            <p id="birth-insight-subtitle" class="birth-insight-subtitle"></p>
+            <p id="birth-insight-body" class="birth-insight-body"></p>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <script>
       const PHASE_ORDER = [
@@ -374,11 +716,125 @@
       const currentSpinner = document.querySelector("#current-spinner");
       const currentIcons = document.querySelector("#current-icons");
       const currentPhaseImageEl = document.querySelector("#current-phase-image");
+      const birthdayPhaseImageEl = document.querySelector("#birthday-phase-image");
+      const birthInsightTrigger = document.querySelector("#birth-insight-trigger");
+      const birthInsightModal = document.querySelector("#birth-insight-modal");
+      const birthInsightClose = document.querySelector("#birth-insight-close");
+      const birthInsightCharacter = document.querySelector("#birth-insight-character");
+      const birthInsightTitle = document.querySelector("#birth-insight-title");
+      const birthInsightSubtitle = document.querySelector("#birth-insight-subtitle");
+      const birthInsightBody = document.querySelector("#birth-insight-body");
 
       const monthCache = new Map();
       let currentDate = new Date();
+      let currentBirthPhase = null;
       const wheelState = new WeakMap();
       const wheelAnimations = new WeakMap();
+      const BIRTH_PHASE_CHARACTERS = {
+        "First Quarter":
+          "https://github.com/Yoyo72099/Dynamic-systems/blob/main/First%20Quarter%20wool.PNG?raw=true",
+        "Last Quarter":
+          "https://github.com/Yoyo72099/Dynamic-systems/blob/main/Last%20Quarter%20wool.PNG?raw=true",
+        "Waning Crescent":
+          "https://github.com/Yoyo72099/Dynamic-systems/blob/main/Waning%20Crescent%20wool.PNG?raw=true",
+        "Waning Gibbous":
+          "https://github.com/Yoyo72099/Dynamic-systems/blob/main/Waning%20Gibbous%20wool.PNG?raw=true",
+        "Waxing Crescent":
+          "https://github.com/Yoyo72099/Dynamic-systems/blob/main/Waxing%20Crescent%20wool.PNG?raw=true",
+        "Waxing Gibbous":
+          "https://github.com/Yoyo72099/Dynamic-systems/blob/main/Waxing%20Gibbous%20wool.PNG?raw=true",
+        "Full Moon":
+          "https://github.com/Yoyo72099/Dynamic-systems/blob/main/full%20moon%20wool.PNG?raw=true",
+        "New Moon":
+          "https://github.com/Yoyo72099/Dynamic-systems/blob/main/new%20moon%20wool.PNG?raw=true",
+      };
+      const BIRTH_PHASE_INSIGHTS = {
+        "New Moon": {
+          title: "Born under the New Moon",
+          subtitle: "The Radiant Seeker",
+          body: `Your heart is pure
+Bold and full of the spirit to challenge
+At this time the moon is closest to the sun
+And so you long to radiate a brilliant light
+You are made for the spotlight
+Let yourself be seen by the world`,
+        },
+        "Waxing Crescent": {
+          title: "Born under the Waxing Crescent",
+          subtitle: "The Curious Wanderer",
+          body: `Your personality is bright and quick-witted
+Filled with an intense curiosity
+Though deep inside you lack a little confidence
+You need to channel your enthusiasm
+Seek out social connection
+Making friends will bring you unexpected support`,
+        },
+        "First Quarter": {
+          title: "Born under the First Quarter",
+          subtitle: "The Burning Leader",
+          body: `You are full of energy and carry big dreams
+You have a natural talent for leadership
+And can easily earn the trust of others
+As the moon moves toward fullness
+You are made to lead others forward
+Together toward a shared and beautiful goal`,
+        },
+        "Waxing Gibbous": {
+          title: "Born under the Waxing Gibbous",
+          subtitle: "The Sharp Opportunist",
+          body: `You are mature and composed
+Unwilling to settle for the ordinary
+You have a gift for recognizing opportunity
+And once you catch it, you know how to use it
+Stay humble in your daily life
+And even more doors will open for you`,
+        },
+        "Full Moon": {
+          title: "Born under the Full Moon",
+          subtitle: "The Lucid Mirror",
+          body: `You are like a mirror
+Able to reflect all things with clarity
+You have a gift for uncovering the truth
+Sometimes that honesty brings you pain
+And sometimes, afraid of being hurt
+You hide your true strength from the world
+Turn inward and listen to yourself
+And you will find greater command over your life`,
+        },
+        "Waning Gibbous": {
+          title: "Born under the Waning Gibbous",
+          subtitle: "The Compassionate Ferryman",
+          body: `You carry a spirit of service
+And see spreading love as your calling
+Your heart is full of compassion
+Able to reach across many boundaries
+Bringing people from different worlds together
+Expand your horizons whenever you can
+And your hidden potential will continue to grow`,
+        },
+        "Last Quarter": {
+          title: "Born under the Last Quarter",
+          subtitle: "The Steadfast Keeper",
+          body: `You are the kind who blooms late
+Steady and calm by nature
+Unshaken when faced with difficulty
+You excel at adapting and adjusting
+Made to be trusted with great responsibility
+Showing your strength and reliability
+Will earn you the recognition you deserve`,
+        },
+        "Waning Crescent": {
+          title: "Born under the Waning Crescent",
+          subtitle: "The Romantic Dreamer",
+          body: `You possess a rich and vivid imagination
+Drawn to the mysterious and the profound
+With a deeply romantic spirit
+You can lean into your intuitive gifts
+Or the artistic talents you carry within
+Be mindful of outside influences
+And resist the pull of your own emotions`,
+        },
+      };
 
       function buildWheel(iconLayerEl) {
         const radius = 124;
@@ -454,6 +910,25 @@
         items.forEach((item, itemIndex) => {
           item.classList.toggle("is-highlighted", itemIndex === idx);
         });
+      }
+
+      function openBirthInsightModal() {
+        if (!currentBirthPhase) return;
+        const insight = BIRTH_PHASE_INSIGHTS[currentBirthPhase];
+        if (!insight) return;
+        const characterSrc = BIRTH_PHASE_CHARACTERS[currentBirthPhase] || "";
+        birthInsightCharacter.src = characterSrc;
+        birthInsightCharacter.alt = currentBirthPhase
+          ? `${currentBirthPhase} character illustration`
+          : "Moon phase character illustration";
+        birthInsightTitle.textContent = insight.title;
+        birthInsightSubtitle.textContent = insight.subtitle ? `- ${insight.subtitle}` : "";
+        birthInsightBody.textContent = insight.body;
+        birthInsightModal.classList.add("is-open");
+      }
+
+      function closeBirthInsightModal() {
+        birthInsightModal.classList.remove("is-open");
       }
 
       function formatDate(date) {
@@ -606,20 +1081,34 @@
           nextPhaseDateEl.textContent = formatDate(nextMatchingDate);
           countdownEl.textContent = `${daysUntil(currentDate, nextMatchingDate)} day(s)`;
           highlightPhaseOnCurrentWheel(birthPhase);
+          syncMainImageWithWheel(birthdayPhaseImageEl, currentIcons, birthPhase);
+          currentBirthPhase = birthPhase;
+          birthInsightTrigger.classList.add("is-visible");
         } catch (error) {
           birthPhaseEl.textContent = `Query failed: ${error.message}`;
           birthDateEl.textContent = "-";
           nextPhaseDateEl.textContent = "-";
           countdownEl.textContent = "-";
+          currentBirthPhase = null;
+          birthInsightTrigger.classList.remove("is-visible");
         }
       });
 
       buildWheel(currentIcons);
       setWheelPhase(currentSpinner, currentIcons, "New Moon", false);
       setMainPhaseImage(currentPhaseImageEl, "New Moon");
+      setMainPhaseImage(birthdayPhaseImageEl, "New Moon");
       highlightPhaseOnCurrentWheel("New Moon");
+      birthInsightTrigger.classList.remove("is-visible");
 
       locateBtn.addEventListener("click", requestLocation);
+      birthInsightTrigger.addEventListener("click", openBirthInsightModal);
+      birthInsightClose.addEventListener("click", closeBirthInsightModal);
+      birthInsightModal.addEventListener("click", (event) => {
+        if (event.target === birthInsightModal) {
+          closeBirthInsightModal();
+        }
+      });
       renderTonightInfo();
     </script>
   </body>
