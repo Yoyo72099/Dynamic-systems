@@ -128,10 +128,6 @@
         transition: transform 900ms cubic-bezier(0.26, 0.86, 0.39, 1.1);
       }
 
-      #birthday-spinner {
-        background-image: url("https://github.com/Yoyo72099/Dynamic-systems/blob/main/spin2.PNG?raw=true");
-      }
-
       .wheel-icons {
         position: absolute;
         inset: 0;
@@ -152,6 +148,12 @@
         border: none;
         box-shadow: none;
         transform-origin: center center;
+      }
+
+      .wheel-item.is-highlighted {
+        transform-origin: center center;
+        box-shadow: 0 0 0 3px rgba(255, 230, 120, 0.9), 0 0 18px rgba(255, 225, 90, 0.9);
+        filter: brightness(1.25);
       }
 
       .wheel-item img {
@@ -319,20 +321,7 @@
           <input id="birthday" name="birthday" type="date" required />
           <button id="birthday-check-btn" type="submit">Check</button>
         </form>
-
-        <div class="phase-wheel-wrap">
-          <div class="phase-wheel" id="birthday-wheel">
-            <div class="wheel-spinner" id="birthday-spinner"></div>
-            <div class="wheel-icons" id="birthday-icons"></div>
-            <div class="wheel-center"></div>
-          </div>
-        </div>
         <div class="phase-info-row">
-          <img
-            id="birthday-phase-image"
-            class="main-phase-image"
-            alt="Birth moon phase image"
-          />
           <div class="phase-details">
             <div class="phase-block">
               <p class="label">Moon phase on your birth date</p>
@@ -396,11 +385,8 @@
       const birthdayInput = document.querySelector("#birthday");
       const locateBtn = document.querySelector("#locate-btn");
       const currentSpinner = document.querySelector("#current-spinner");
-      const birthdaySpinner = document.querySelector("#birthday-spinner");
       const currentIcons = document.querySelector("#current-icons");
-      const birthdayIcons = document.querySelector("#birthday-icons");
       const currentPhaseImageEl = document.querySelector("#current-phase-image");
-      const birthdayPhaseImageEl = document.querySelector("#birthday-phase-image");
 
       const monthCache = new Map();
       let currentDate = new Date();
@@ -473,6 +459,14 @@
         const src = matchedSrc || PHASE_IMAGES[phaseName] || PHASE_IMAGES["New Moon"];
         imgEl.src = src;
         imgEl.alt = `${phaseName} image`;
+      }
+
+      function highlightPhaseOnCurrentWheel(phaseName) {
+        const idx = PHASE_ORDER.indexOf(phaseName);
+        const items = currentIcons.querySelectorAll(".wheel-item");
+        items.forEach((item, itemIndex) => {
+          item.classList.toggle("is-highlighted", itemIndex === idx);
+        });
       }
 
       function formatDate(date) {
@@ -589,6 +583,7 @@
           tonightPhaseEl.textContent = phase;
           setWheelPhase(currentSpinner, currentIcons, phase, false);
           syncMainImageWithWheel(currentPhaseImageEl, currentIcons, phase);
+          highlightPhaseOnCurrentWheel(phase);
         } catch (error) {
           timeStatusEl.textContent = `Time API failed. Using local time. ${error.message}`;
           currentDate = new Date();
@@ -598,6 +593,7 @@
             tonightPhaseEl.textContent = fallbackPhase;
             setWheelPhase(currentSpinner, currentIcons, fallbackPhase, false);
             syncMainImageWithWheel(currentPhaseImageEl, currentIcons, fallbackPhase);
+            highlightPhaseOnCurrentWheel(fallbackPhase);
           } catch (phaseError) {
             tonightPhaseEl.textContent = `Moon phase load failed: ${phaseError.message}`;
           }
@@ -622,9 +618,7 @@
           const nextMatchingDate = await findNextDateForPhase(currentDate, birthPhase);
           nextPhaseDateEl.textContent = formatDate(nextMatchingDate);
           countdownEl.textContent = `${daysUntil(currentDate, nextMatchingDate)} day(s)`;
-
-          setWheelPhase(birthdaySpinner, birthdayIcons, birthPhase, true);
-          syncMainImageWithWheel(birthdayPhaseImageEl, birthdayIcons, birthPhase);
+          highlightPhaseOnCurrentWheel(birthPhase);
         } catch (error) {
           birthPhaseEl.textContent = `Query failed: ${error.message}`;
           birthDateEl.textContent = "-";
@@ -634,18 +628,15 @@
       });
 
       buildWheel(currentIcons);
-      buildWheel(birthdayIcons);
       setWheelPhase(currentSpinner, currentIcons, "New Moon", false);
-      setWheelPhase(birthdaySpinner, birthdayIcons, "New Moon", true);
       setMainPhaseImage(currentPhaseImageEl, "New Moon");
-      setMainPhaseImage(birthdayPhaseImageEl, "New Moon");
+      highlightPhaseOnCurrentWheel("New Moon");
 
       locateBtn.addEventListener("click", requestLocation);
       renderTonightInfo();
     </script>
   </body>
 </html>
-
 
 
 
