@@ -13,8 +13,20 @@
         font-style: normal;
       }
 
+      @font-face {
+        font-family: "Handmade Alphabet";
+        src: url("https://github.com/Yoyo72099/Dynamic-systems/raw/refs/heads/main/Handmade%20Alphabet.otf")
+          format("opentype");
+        font-weight: 400;
+        font-style: normal;
+      }
+
       * {
         box-sizing: border-box;
+      }
+
+      :root {
+        --moon-cursor: url("./assets/mouse-cursor.png");
       }
 
       body {
@@ -26,6 +38,42 @@
         background-size: cover;
         color: #2f2831;
         min-height: 100vh;
+        cursor: var(--moon-cursor) 6 2, auto;
+      }
+
+      button,
+      a,
+      input,
+      label,
+      .birth-insight-trigger,
+      .moon-card-trigger,
+      .about-trigger {
+        cursor: var(--moon-cursor) 6 2, pointer;
+      }
+
+      body * {
+        cursor: var(--moon-cursor) 6 2, auto;
+      }
+
+      button,
+      button:hover,
+      button:focus,
+      button:active,
+      .action-btn,
+      .action-btn:hover,
+      .action-btn:focus,
+      .action-btn:active,
+      #birthday-check-btn,
+      #birthday-check-btn:hover,
+      #locate-btn,
+      #locate-btn:hover,
+      #moon-card-download-btn,
+      #moon-card-download-btn:hover,
+      #moon-card-close,
+      #moon-card-open,
+      #birth-insight-close,
+      #birth-insight-trigger {
+        cursor: var(--moon-cursor) 6 2, auto !important;
       }
 
       .container {
@@ -166,7 +214,7 @@
 
       .wheel-item.is-highlighted {
         transform-origin: center center;
-        box-shadow: 0 0 0 3px rgba(255, 230, 120, 0.9), 0 0 18px rgba(255, 225, 90, 0.9);
+        box-shadow: 0 0 0 3px rgba(186, 130, 255, 0.92), 0 0 18px rgba(168, 99, 255, 0.9);
         filter: brightness(1.25);
       }
 
@@ -222,6 +270,69 @@
         top: 12px;
         right: 14px;
         z-index: 120;
+      }
+
+      .moon-card-entry {
+        position: fixed;
+        top: 14px;
+        left: 14px;
+        z-index: 110;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-6px);
+        transition: opacity 220ms ease, transform 220ms ease, visibility 220ms ease;
+        pointer-events: none;
+      }
+
+      .moon-card-entry.is-visible {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+        pointer-events: auto;
+      }
+
+      .moon-card-entry.is-in-insight {
+        z-index: 10001;
+      }
+
+      .moon-card-trigger {
+        width: 72px;
+        height: 66px;
+        border: none;
+        padding: 0;
+        border-radius: 0;
+        background: transparent
+          url("https://github.com/Yoyo72099/Dynamic-systems/blob/main/evenlop.PNG?raw=true") center / contain
+          no-repeat;
+        box-shadow: none;
+        text-indent: -9999px;
+        overflow: hidden;
+        cursor: pointer;
+      }
+
+      .moon-card-tip {
+        position: absolute;
+        top: 56px;
+        left: 0;
+        white-space: nowrap;
+        padding: 0.26rem 0.48rem;
+        border-radius: 8px;
+        background: rgba(7, 10, 22, 0.88);
+        border: 1px solid rgba(185, 147, 255, 0.35);
+        color: #f6efff;
+        font-size: 0.72rem;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-4px);
+        transition: opacity 180ms ease, transform 180ms ease, visibility 180ms ease;
+        pointer-events: none;
+      }
+
+      .moon-card-entry:hover .moon-card-tip,
+      .moon-card-entry:focus-within .moon-card-tip {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
       }
 
       .about-trigger {
@@ -356,6 +467,152 @@
         padding: 1.4rem;
       }
 
+      .moon-card-modal {
+        position: fixed;
+        inset: 0;
+        background: rgba(2, 3, 8, 0.9);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 10002;
+        padding: 1rem;
+      }
+
+      .moon-card-modal.is-open {
+        display: flex;
+      }
+
+      .moon-card-dialog {
+        position: relative;
+        width: min(560px, 92vw);
+      }
+
+      .moon-card-close {
+        position: absolute;
+        top: -8px;
+        right: -4px;
+        border: none;
+        background: transparent;
+        color: #f8f3ea;
+        font-size: 2rem;
+        line-height: 1;
+        cursor: pointer;
+      }
+
+      .moon-id-card {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 1.58 / 1;
+        border-radius: 16px;
+        overflow: hidden;
+        background-color: rgba(19, 13, 30, 0.62);
+        box-shadow: 0 18px 38px rgba(0, 0, 0, 0.5);
+        padding: 1rem 1.05rem;
+        color: #4d2a66;
+        font-family: "Handmade Alphabet", "Trebuchet MS", "Segoe UI", Arial, sans-serif;
+        text-shadow: none;
+      }
+
+      .moon-id-bg {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        object-position: center;
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      .moon-id-content {
+        position: relative;
+        z-index: 1;
+        height: 100%;
+        display: grid;
+        grid-template-columns: minmax(190px, 0.9fr) 1.1fr;
+        grid-template-rows: auto 1fr auto;
+        column-gap: 1rem;
+        row-gap: 0.45rem;
+      }
+
+      .moon-id-title {
+        margin: 0;
+        font-size: 1.22rem;
+        letter-spacing: 0.02em;
+        grid-column: 1 / -1;
+        color: #4a2368;
+        padding-left: 0.3rem;
+      }
+
+      .moon-id-character {
+        width: min(220px, 100%);
+        max-height: 210px;
+        object-fit: contain;
+        justify-self: center;
+        align-self: center;
+        grid-row: 2;
+      }
+
+      .moon-id-fields {
+        grid-row: 2;
+        align-self: center;
+        padding-left: 0.55rem;
+      }
+
+      .moon-id-field {
+        margin: 0;
+      }
+
+      .moon-id-label {
+        margin: 0 0 0.15rem;
+        font-size: 1rem;
+        color: #5a2f75;
+        opacity: 1;
+      }
+
+      .moon-id-value {
+        margin: 0;
+        font-size: 1.24rem;
+        color: #44235f;
+      }
+
+      .moon-id-role {
+        color: #a5337a;
+      }
+
+      .moon-id-watermark {
+        margin: 0.35rem 0 0;
+        text-align: right;
+        font-size: 0.95rem;
+        letter-spacing: 0.07em;
+        color: #5a2b78;
+        opacity: 0.95;
+        grid-column: 1 / -1;
+      }
+
+      .moon-card-actions {
+        margin-top: 0.65rem;
+        display: flex;
+        justify-content: flex-end;
+      }
+
+      #moon-card-download-btn {
+        border: none;
+        border-radius: 10px;
+        padding: 0.45rem 0.75rem;
+        background: transparent url("https://github.com/Yoyo72099/Dynamic-systems/blob/main/download.PNG?raw=true")
+          center / 100% 100% no-repeat;
+        color: transparent;
+        font-size: 0.84rem;
+        text-shadow: none;
+        cursor: pointer;
+      }
+
+      #moon-card-download-btn:disabled {
+        opacity: 0.52;
+        cursor: not-allowed;
+      }
+
       .birth-insight-modal.is-open {
         display: flex;
       }
@@ -424,10 +681,13 @@
         top: 22px;
         right: 28px;
         border: none;
-        background: transparent;
-        color: #f8f3ea;
-        font-size: 2rem;
-        line-height: 1;
+        width: 44px;
+        height: 44px;
+        padding: 0;
+        background: transparent url("https://github.com/Yoyo72099/Dynamic-systems/blob/main/close.PNG?raw=true")
+          center / contain no-repeat;
+        color: transparent;
+        font-size: 0;
         cursor: pointer;
       }
 
@@ -522,11 +782,33 @@
       @media (max-width: 920px) {
         .container {
           grid-template-columns: 1fr;
+          gap: 0.6rem;
+          padding: 0 0.7rem;
+        }
+
+        .card {
+          padding: 0.75rem;
+        }
+
+        .left-shift {
+          margin-left: 0;
+        }
+
+        .top-status-row {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 0.35rem;
+        }
+
+        #locate-btn {
+          width: 132px;
+          height: 52px;
         }
 
         .phase-wheel-wrap {
           width: 400px;
           height: 400px;
+          margin: 0.7rem auto 0.5rem;
         }
 
         .phase-wheel {
@@ -535,15 +817,16 @@
         }
 
         .image-row {
-          grid-template-columns: 1fr;
+          display: flex;
+          flex-direction: column;
+          gap: 1.1rem;
+          margin-top: 0.5rem;
         }
 
+        .current-panel,
         .birthday-panel {
+          width: 100%;
           max-width: 100%;
-          min-height: auto;
-        }
-
-        .current-panel {
           min-height: auto;
         }
 
@@ -554,10 +837,58 @@
           left: auto;
           right: auto;
         }
+
+        .birthday-results {
+          margin-top: 0.35rem;
+        }
+
+        .about-hover {
+          top: 8px;
+          right: 10px;
+        }
+
+        .moon-card-entry {
+          top: 8px;
+          left: 10px;
+        }
+
+        .about-trigger {
+          width: 110px;
+          height: 42px;
+        }
+
+        .moon-card-trigger {
+          width: 58px;
+          height: 52px;
+        }
+
+        .moon-id-card {
+          aspect-ratio: 1.2 / 1;
+        }
+
+        .moon-id-content {
+          grid-template-columns: 1fr;
+          grid-template-rows: auto auto auto auto;
+          row-gap: 0.35rem;
+        }
+
+        .moon-id-character,
+        .moon-id-fields {
+          grid-row: auto;
+        }
+
+        .moon-id-watermark {
+          text-align: center;
+        }
       }
     </style>
   </head>
   <body>
+    <div class="moon-card-entry" aria-label="Moon card entry">
+      <button id="moon-card-open" class="moon-card-trigger" type="button">Moon Card</button>
+      <div class="moon-card-tip">Get Your Moon Card</div>
+    </div>
+
     <main class="container">
       <section class="card wheel-card">
         <div class="about-hover" aria-label="About this site">
@@ -673,6 +1004,49 @@
       </div>
     </div>
 
+    <div id="moon-card-modal" class="moon-card-modal">
+      <div class="moon-card-dialog">
+        <button id="moon-card-close" class="moon-card-close" type="button" aria-label="Close">×</button>
+        <div id="moon-id-card" class="moon-id-card">
+          <img
+            id="moon-id-bg"
+            class="moon-id-bg"
+            src="https://raw.githubusercontent.com/Yoyo72099/Dynamic-systems/refs/heads/main/identity%20card.jpg"
+            alt="Moon identity card background"
+            crossorigin="anonymous"
+          />
+          <div class="moon-id-content">
+            <h3 class="moon-id-title">Moon Card</h3>
+            <img
+              id="moon-id-character"
+              class="moon-id-character"
+              alt="Moon card character"
+              crossorigin="anonymous"
+            />
+            <div class="moon-id-fields">
+              <div class="moon-id-field">
+                <p class="moon-id-label">Moon Phase</p>
+                <p id="moon-id-phase" class="moon-id-value">-</p>
+              </div>
+              <div class="moon-id-field">
+                <p class="moon-id-label">Identity Title</p>
+                <p id="moon-id-role" class="moon-id-value moon-id-role">-</p>
+              </div>
+              <div class="moon-id-field">
+                <p class="moon-id-label">Birth Date</p>
+                <p id="moon-id-birthdate" class="moon-id-value">-</p>
+              </div>
+            </div>
+            <p class="moon-id-watermark">Moonborn</p>
+          </div>
+        </div>
+        <div class="moon-card-actions">
+          <button id="moon-card-download-btn" type="button" disabled>Download Card</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
     <script>
       const PHASE_ORDER = [
         "New Moon",
@@ -724,12 +1098,41 @@
       const birthInsightTitle = document.querySelector("#birth-insight-title");
       const birthInsightSubtitle = document.querySelector("#birth-insight-subtitle");
       const birthInsightBody = document.querySelector("#birth-insight-body");
+      const moonCardOpenBtn = document.querySelector("#moon-card-open");
+      const moonCardEntry = document.querySelector(".moon-card-entry");
+      const moonCardModal = document.querySelector("#moon-card-modal");
+      const moonCardCloseBtn = document.querySelector("#moon-card-close");
+      const moonIdBg = document.querySelector("#moon-id-bg");
+      const moonIdCharacter = document.querySelector("#moon-id-character");
+      const moonIdPhase = document.querySelector("#moon-id-phase");
+      const moonIdRole = document.querySelector("#moon-id-role");
+      const moonIdBirthDate = document.querySelector("#moon-id-birthdate");
+      const moonCardDownloadBtn = document.querySelector("#moon-card-download-btn");
 
       const monthCache = new Map();
       let currentDate = new Date();
       let currentBirthPhase = null;
+      let currentBirthDateValue = "-";
       const wheelState = new WeakMap();
       const wheelAnimations = new WeakMap();
+      const MOON_CARD_CHARACTERS = {
+        "New Moon":
+          "https://raw.githubusercontent.com/Yoyo72099/Dynamic-systems/refs/heads/main/new%20moon%20h.PNG",
+        "Full Moon":
+          "https://raw.githubusercontent.com/Yoyo72099/Dynamic-systems/refs/heads/main/full%20moon%20h.PNG",
+        "Waxing Gibbous":
+          "https://raw.githubusercontent.com/Yoyo72099/Dynamic-systems/refs/heads/main/Waxing%20Gibbous%20h.PNG",
+        "Waxing Crescent":
+          "https://raw.githubusercontent.com/Yoyo72099/Dynamic-systems/refs/heads/main/Waxing%20Crescent%20h.PNG",
+        "Waning Gibbous":
+          "https://raw.githubusercontent.com/Yoyo72099/Dynamic-systems/refs/heads/main/Waning%20Gibbous%20h.PNG",
+        "Waning Crescent":
+          "https://raw.githubusercontent.com/Yoyo72099/Dynamic-systems/refs/heads/main/Waning%20Crescent%20h.PNG",
+        "Last Quarter":
+          "https://raw.githubusercontent.com/Yoyo72099/Dynamic-systems/refs/heads/main/Last%20Quarter%20h.PNG",
+        "First Quarter":
+          "https://raw.githubusercontent.com/Yoyo72099/Dynamic-systems/refs/heads/main/First%20Quarter%20h.PNG",
+      };
       const BIRTH_PHASE_CHARACTERS = {
         "First Quarter":
           "https://github.com/Yoyo72099/Dynamic-systems/blob/main/First%20Quarter%20wool.PNG?raw=true",
@@ -924,11 +1327,67 @@ And resist the pull of your own emotions`,
         birthInsightTitle.textContent = insight.title;
         birthInsightSubtitle.textContent = insight.subtitle ? `- ${insight.subtitle}` : "";
         birthInsightBody.textContent = insight.body;
+        moonCardEntry.classList.add("is-visible", "is-in-insight");
         birthInsightModal.classList.add("is-open");
       }
 
       function closeBirthInsightModal() {
         birthInsightModal.classList.remove("is-open");
+        moonCardEntry.classList.remove("is-visible", "is-in-insight");
+      }
+
+      function updateMoonCard() {
+        const phase = currentBirthPhase || "-";
+        const insight = currentBirthPhase ? BIRTH_PHASE_INSIGHTS[currentBirthPhase] : null;
+        const role = insight?.subtitle || "-";
+        const characterSrc =
+          (currentBirthPhase && MOON_CARD_CHARACTERS[currentBirthPhase]) || MOON_CARD_CHARACTERS["New Moon"];
+        moonIdPhase.textContent = phase;
+        moonIdRole.textContent = role;
+        moonIdBirthDate.textContent = currentBirthDateValue || "-";
+        moonIdCharacter.src = characterSrc;
+        moonIdCharacter.alt = currentBirthPhase
+          ? `${currentBirthPhase} identity character`
+          : "Moon identity character";
+        moonCardDownloadBtn.disabled = !currentBirthPhase;
+      }
+
+      function openMoonCardModal() {
+        updateMoonCard();
+        moonCardModal.classList.add("is-open");
+      }
+
+      function closeMoonCardModal() {
+        moonCardModal.classList.remove("is-open");
+      }
+
+      async function downloadMoonCard() {
+        if (!currentBirthPhase || typeof html2canvas === "undefined") return;
+        const waitForImageReady = (img) =>
+          new Promise((resolve) => {
+            if (!img || (img.complete && img.naturalWidth > 0)) {
+              resolve();
+              return;
+            }
+            const done = () => {
+              img.removeEventListener("load", done);
+              img.removeEventListener("error", done);
+              resolve();
+            };
+            img.addEventListener("load", done);
+            img.addEventListener("error", done);
+          });
+        await Promise.all([waitForImageReady(moonIdBg), waitForImageReady(moonIdCharacter)]);
+        const canvas = await html2canvas(document.querySelector("#moon-id-card"), {
+          backgroundColor: null,
+          useCORS: true,
+          scale: 2,
+        });
+        const link = document.createElement("a");
+        const safePhase = currentBirthPhase.toLowerCase().replace(/\s+/g, "-");
+        link.download = `moonborn-card-${safePhase}.png`;
+        link.href = canvas.toDataURL("image/png");
+        link.click();
       }
 
       function formatDate(date) {
@@ -1076,6 +1535,7 @@ And resist the pull of your own emotions`,
           const birthPhase = await fetchMoonPhaseByDate(birthday);
           birthDateEl.textContent = formatDate(birthday);
           birthPhaseEl.textContent = `${formatDate(birthday)}: ${birthPhase}`;
+          currentBirthDateValue = formatDate(birthday);
 
           const nextMatchingDate = await findNextDateForPhase(currentDate, birthPhase);
           nextPhaseDateEl.textContent = formatDate(nextMatchingDate);
@@ -1090,7 +1550,9 @@ And resist the pull of your own emotions`,
           nextPhaseDateEl.textContent = "-";
           countdownEl.textContent = "-";
           currentBirthPhase = null;
+          currentBirthDateValue = "-";
           birthInsightTrigger.classList.remove("is-visible");
+          moonCardEntry.classList.remove("is-visible", "is-in-insight");
         }
       });
 
@@ -1100,20 +1562,29 @@ And resist the pull of your own emotions`,
       setMainPhaseImage(birthdayPhaseImageEl, "New Moon");
       highlightPhaseOnCurrentWheel("New Moon");
       birthInsightTrigger.classList.remove("is-visible");
+      moonCardEntry.classList.remove("is-visible", "is-in-insight");
+      updateMoonCard();
 
       locateBtn.addEventListener("click", requestLocation);
       birthInsightTrigger.addEventListener("click", openBirthInsightModal);
       birthInsightClose.addEventListener("click", closeBirthInsightModal);
+      moonCardOpenBtn.addEventListener("click", openMoonCardModal);
+      moonCardCloseBtn.addEventListener("click", closeMoonCardModal);
+      moonCardDownloadBtn.addEventListener("click", downloadMoonCard);
       birthInsightModal.addEventListener("click", (event) => {
         if (event.target === birthInsightModal) {
           closeBirthInsightModal();
+        }
+      });
+      moonCardModal.addEventListener("click", (event) => {
+        if (event.target === moonCardModal) {
+          closeMoonCardModal();
         }
       });
       renderTonightInfo();
     </script>
   </body>
 </html>
-
 
 
 
