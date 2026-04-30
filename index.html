@@ -29,6 +29,10 @@
         --moon-cursor: url("./assets/mouse-cursor.png");
         --text-sm: 0.94rem;
         --text-lg: 1.08rem;
+        --wheel-wrap-size: clamp(380px, 39vw, 540px);
+        --wheel-size: clamp(350px, 36vw, 500px);
+        --wheel-icon-size: clamp(48px, 4.2vw, 58px);
+        --right-panel-top: clamp(390px, 30vw, 458px);
       }
 
       body {
@@ -167,18 +171,18 @@
 
       .phase-wheel-wrap {
         margin: 1.05rem 0 0.85rem -26px;
-        width: 540px;
-        height: 540px;
+        width: var(--wheel-wrap-size);
+        height: var(--wheel-wrap-size);
         border-radius: 50%;
         position: relative;
       }
 
       .phase-wheel {
-        width: 500px;
-        height: 500px;
+        width: var(--wheel-size);
+        height: var(--wheel-size);
         position: relative;
         border-radius: 50%;
-        margin: 20px auto 0;
+        margin: clamp(10px, 1.6vw, 20px) auto 0;
       }
 
       .wheel-spinner {
@@ -205,8 +209,8 @@
         position: absolute;
         left: 50%;
         top: 50%;
-        width: 58px;
-        height: 58px;
+        width: var(--wheel-icon-size);
+        height: var(--wheel-icon-size);
         border-radius: 50%;
         overflow: hidden;
         border: none;
@@ -243,8 +247,8 @@
       }
 
       .main-phase-image {
-        width: 165px;
-        height: 165px;
+        width: clamp(145px, 12.4vw, 165px);
+        height: clamp(145px, 12.4vw, 165px);
         margin: 0 auto 0.7rem;
         display: block;
         border-radius: 50%;
@@ -395,7 +399,7 @@
 
       .current-panel {
         position: relative;
-        min-height: 860px;
+        min-height: clamp(760px, 63vw, 860px);
       }
 
       .birthday-panel {
@@ -403,20 +407,20 @@
         max-width: 82%;
         justify-self: end;
         margin-top: 0;
-        min-height: 860px;
+        min-height: clamp(760px, 63vw, 860px);
       }
 
       .current-panel-form {
         max-width: 360px;
         position: absolute;
-        top: 458px;
+        top: var(--right-panel-top);
         left: 0;
         margin: 0;
       }
 
       .birthday-results {
         position: absolute;
-        top: 458px;
+        top: var(--right-panel-top);
         left: 0;
         right: 0;
         margin-top: 0;
