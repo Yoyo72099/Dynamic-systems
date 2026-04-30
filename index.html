@@ -7,18 +7,18 @@
     <style>
       @font-face {
         font-family: "Willow Stitch";
-        src: url("https://github.com/Yoyo72099/Dynamic-systems/raw/refs/heads/main/WillowStitch.otf")
-          format("opentype");
+        src: url("./assets/fonts/WillowStitch.otf") format("opentype");
         font-weight: 400;
         font-style: normal;
+        font-display: swap;
       }
 
       @font-face {
         font-family: "Handmade Alphabet";
-        src: url("https://github.com/Yoyo72099/Dynamic-systems/raw/refs/heads/main/Handmade%20Alphabet.otf")
-          format("opentype");
+        src: url("./assets/fonts/Handmade-Alphabet.otf") format("opentype");
         font-weight: 400;
         font-style: normal;
+        font-display: swap;
       }
 
       * {
@@ -27,6 +27,8 @@
 
       :root {
         --moon-cursor: url("./assets/mouse-cursor.png");
+        --text-sm: 0.94rem;
+        --text-lg: 1.08rem;
       }
 
       body {
@@ -102,7 +104,7 @@
         margin: 0 0 0.32rem;
         color: #fff6eb;
         text-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
-        font-size: 0.76rem;
+        font-size: var(--text-sm);
         font-weight: 400;
         letter-spacing: 0;
         white-space: nowrap;
@@ -124,7 +126,7 @@
       button {
         border: none;
         padding: 0.55rem 0.9rem;
-        font-size: 0.92rem;
+        font-size: var(--text-sm);
         background: #b58763;
         color: #fffaf0;
         font-weight: 700;
@@ -214,8 +216,11 @@
 
       .wheel-item.is-highlighted {
         transform-origin: center center;
-        box-shadow: 0 0 0 3px rgba(186, 130, 255, 0.92), 0 0 18px rgba(168, 99, 255, 0.9);
-        filter: brightness(1.25);
+        box-shadow:
+          0 0 12px rgba(176, 96, 255, 0.75),
+          0 0 24px rgba(152, 74, 245, 0.58),
+          0 0 38px rgba(126, 56, 224, 0.42);
+        filter: brightness(1.18) saturate(1.08);
       }
 
       .wheel-item img {
@@ -320,7 +325,7 @@
         background: rgba(7, 10, 22, 0.88);
         border: 1px solid rgba(185, 147, 255, 0.35);
         color: #f6efff;
-        font-size: 0.72rem;
+        font-size: var(--text-sm);
         opacity: 0;
         visibility: hidden;
         transform: translateY(-4px);
@@ -353,14 +358,14 @@
         position: absolute;
         top: 54px;
         right: 0;
-        width: min(440px, 75vw);
+        width: min(300px, 65vw);
         padding: 0.85rem 0.95rem;
         background: rgba(7, 10, 22, 0.9);
         color: #f6efff;
         border: 1px solid rgba(185, 147, 255, 0.35);
         border-radius: 12px;
         line-height: 1.45;
-        font-size: 0.86rem;
+        font-size: var(--text-sm);
         text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
         opacity: 0;
         visibility: hidden;
@@ -434,13 +439,23 @@
       .birth-insight-trigger {
         width: 240px;
         margin: 0.2rem 0 0.8rem -26px;
-        padding: 0;
-        border: none;
-        background: transparent;
+        padding: 0.22rem 0.28rem;
+        border: 1px solid rgba(196, 158, 255, 0.5);
+        border-radius: 14px;
+        background: rgba(20, 13, 38, 0.36);
+        box-shadow:
+          0 0 0 1px rgba(255, 255, 255, 0.08) inset,
+          0 0 14px rgba(168, 101, 255, 0.45),
+          0 0 28px rgba(120, 70, 214, 0.26);
         cursor: pointer;
         opacity: 0;
         transform: translateY(8px);
-        transition: opacity 480ms ease, transform 480ms ease;
+        transition:
+          opacity 480ms ease,
+          transform 220ms ease,
+          box-shadow 220ms ease,
+          filter 220ms ease,
+          background 220ms ease;
         pointer-events: none;
       }
 
@@ -454,6 +469,18 @@
         width: 100%;
         height: auto;
         display: block;
+        border-radius: 10px;
+      }
+
+      .birth-insight-trigger:hover,
+      .birth-insight-trigger:focus-visible {
+        transform: translateY(0) scale(1.015);
+        background: rgba(28, 18, 52, 0.48);
+        box-shadow:
+          0 0 0 1px rgba(255, 255, 255, 0.14) inset,
+          0 0 18px rgba(196, 129, 255, 0.62),
+          0 0 34px rgba(144, 88, 244, 0.36);
+        filter: brightness(1.03);
       }
 
       .birth-insight-modal {
@@ -537,7 +564,7 @@
 
       .moon-id-title {
         margin: 0;
-        font-size: 1.22rem;
+        font-size: 1.2rem;
         letter-spacing: 0.02em;
         grid-column: 1 / -1;
         color: #4a2368;
@@ -556,24 +583,25 @@
       .moon-id-fields {
         grid-row: 2;
         align-self: center;
-        padding-left: 0.55rem;
+        padding-left: 1.2rem;
       }
 
       .moon-id-field {
-        margin: 0;
+        margin: 0 0 0.45rem;
       }
 
       .moon-id-label {
         margin: 0 0 0.15rem;
-        font-size: 1rem;
+        font-size: 1.08rem;
         color: #5a2f75;
         opacity: 1;
       }
 
       .moon-id-value {
         margin: 0;
-        font-size: 1.24rem;
+        font-size: 1.42rem;
         color: #44235f;
+        line-height: 1.15;
       }
 
       .moon-id-role {
@@ -583,7 +611,7 @@
       .moon-id-watermark {
         margin: 0.35rem 0 0;
         text-align: right;
-        font-size: 0.95rem;
+        font-size: var(--text-lg);
         letter-spacing: 0.07em;
         color: #5a2b78;
         opacity: 0.95;
@@ -603,7 +631,7 @@
         background: transparent url("https://github.com/Yoyo72099/Dynamic-systems/blob/main/download.PNG?raw=true")
           center / 100% 100% no-repeat;
         color: transparent;
-        font-size: 0.84rem;
+        font-size: var(--text-sm);
         text-shadow: none;
         cursor: pointer;
       }
@@ -693,12 +721,12 @@
 
       .birth-insight-title {
         margin: 0 0 0.2rem;
-        font-size: 1.12rem;
+        font-size: var(--text-lg);
       }
 
       .birth-insight-subtitle {
         margin: 0 0 0.9rem;
-        font-size: 0.98rem;
+        font-size: var(--text-sm);
         color: #b88cff;
         letter-spacing: 0.03em;
       }
@@ -707,7 +735,7 @@
         margin: 0;
         white-space: pre-line;
         line-height: 1.58;
-        font-size: 1.03rem;
+        font-size: var(--text-lg);
       }
 
       @media (max-width: 820px) {
@@ -733,6 +761,7 @@
         margin: 0.2rem 0 0.75rem;
         color: #f8f0e8;
         text-shadow: 0 2px 7px rgba(0, 0, 0, 0.35);
+        font-size: var(--text-sm);
       }
 
       .phase-block {
@@ -742,13 +771,13 @@
       .label {
         margin: 0 0 0.15rem;
         color: #f3dfcf;
-        font-size: 0.88rem;
+        font-size: var(--text-sm);
         text-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
       }
 
       .value {
         margin: 0;
-        font-size: 1.02rem;
+        font-size: var(--text-lg);
         color: #fff6eb;
         font-weight: 700;
         text-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
@@ -766,6 +795,7 @@
         color: #fff0e3;
         font-weight: 700;
         text-shadow: 0 2px 7px rgba(0, 0, 0, 0.35);
+        font-size: var(--text-sm);
       }
 
       input {
@@ -776,7 +806,18 @@
         padding: 0.52rem 0.75rem;
         background: rgba(255, 252, 246, 0.9);
         color: #413329;
-        font-size: 0.95rem;
+        font-size: var(--text-lg);
+        font-family: "Willow Stitch", "Trebuchet MS", "Arial Rounded MT Bold", sans-serif;
+      }
+
+      input::-webkit-datetime-edit,
+      input::-webkit-datetime-edit-fields-wrapper,
+      input::-webkit-datetime-edit-text,
+      input::-webkit-datetime-edit-month-field,
+      input::-webkit-datetime-edit-day-field,
+      input::-webkit-datetime-edit-year-field {
+        font-family: inherit;
+        font-size: inherit;
       }
 
       @media (max-width: 920px) {
@@ -967,7 +1008,7 @@
                 <p id="birth-phase" class="value">-</p>
               </div>
               <div class="phase-block">
-                <p class="label">Your birthday (YYYY-MM-DD)</p>
+                <p class="label">Your birthday</p>
                 <p id="birth-date" class="value">-</p>
               </div>
               <div class="phase-block">
@@ -1473,10 +1514,11 @@ And resist the pull of your own emotions`,
 
         locationStatusEl.textContent = "Getting your location...";
         navigator.geolocation.getCurrentPosition(
-          (position) => {
-            const lat = position.coords.latitude.toFixed(4);
-            const lon = position.coords.longitude.toFixed(4);
-            locationStatusEl.textContent = `Your location: ${lat}, ${lon}`;
+          () => {
+            const zone = Intl.DateTimeFormat().resolvedOptions().timeZone || "";
+            const cityToken = zone.split("/").pop() || "";
+            const city = cityToken.replace(/_/g, " ").trim();
+            locationStatusEl.textContent = city ? `Your location: ${city}` : "Your location is available.";
           },
           (error) => {
             locationStatusEl.textContent = `Location access failed: ${error.message}`;
@@ -1497,7 +1539,10 @@ And resist the pull of your own emotions`,
             timeData.seconds,
           );
 
-          timeStatusEl.textContent = `Current timezone: ${timeData.timeZone}, current time: ${timeData.dateTime}`;
+          const conciseTime = `${String(timeData.year).padStart(4, "0")}-${String(timeData.month).padStart(2, "0")}-${String(
+            timeData.day,
+          ).padStart(2, "0")} ${String(timeData.hour).padStart(2, "0")}:${String(timeData.minute).padStart(2, "0")}`;
+          timeStatusEl.textContent = `Current timezone: ${timeData.timeZone}, current time: ${conciseTime}`;
           todayDateEl.textContent = formatDate(currentDate);
 
           const phase = await fetchMoonPhaseByDate(currentDate);
@@ -1534,7 +1579,7 @@ And resist the pull of your own emotions`,
         try {
           const birthPhase = await fetchMoonPhaseByDate(birthday);
           birthDateEl.textContent = formatDate(birthday);
-          birthPhaseEl.textContent = `${formatDate(birthday)}: ${birthPhase}`;
+          birthPhaseEl.textContent = birthPhase;
           currentBirthDateValue = formatDate(birthday);
 
           const nextMatchingDate = await findNextDateForPhase(currentDate, birthPhase);
